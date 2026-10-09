@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="1인 가구를 위한 공동의 집사, 공집사 프로토타입">
+<meta name="theme-color" content="#141A3C">
+<title>공집사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<style>
+/* 레이아웃: 네이비 집사 대화 패널이 항상 곁에 서 있고, 옆 작업 공간이 여섯 기능을 오간다. 좁은 화면에서는 하단 탭 한 줄. */
+:root{
+  --bg:#ECEEE9; --surface:#FAFBF8; --sunk:#E1E5DE; --tint:#D5E9E5;
+  --ink:#18223D; --muted:#566078; --line:#D2D8CF; --leaf:#2B5B45;
+  --panel:#1B2845; --panel-2:#27375B; --on-panel:#F2F5EF; --on-panel-muted:#AAB5CD;
+  --butler:#8ABB8C; --butler-ink:#16213A; --mint:#C6E2DE; --bubble:#FFFFFF; --bubble-ink:#18223D;
+  --gold:#E3B63E; --gold-ink:#1B2238;
+  --red:#B0343C; --amber:#DDAA2C; --go:#4A8558; --on-signal:#FFFFFF;
+  --sky:#141A3C; --gnd:#141A3C; --logo-ink:#FFFFFF;
+  --font-display:"Do Hyeon","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1524; --surface:#172036; --sunk:#111A2D; --tint:#21373E;
+    --ink:#E8EDE6; --muted:#9CA7BC; --line:#2A3651; --leaf:#9CCFA0;
+    --panel:#1B2845; --panel-2:#27375B; --on-panel:#F2F5EF; --on-panel-muted:#AAB5CD;
+    --butler:#8ABB8C; --butler-ink:#16213A; --mint:#C6E2DE; --bubble:#F4F6F1; --bubble-ink:#18223D;
+    --gold:#E3B63E; --gold-ink:#1B2238;
+    --red:#B8404A; --amber:#DDAA2C; --go:#4F8E5F; --on-signal:#FFFFFF;
+  --sky:#141A3C; --gnd:#141A3C; --logo-ink:#FFFFFF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1524; --surface:#172036; --sunk:#111A2D; --tint:#21373E;
+  --ink:#E8EDE6; --muted:#9CA7BC; --line:#2A3651; --leaf:#9CCFA0;
+  --panel:#1B2845; --panel-2:#27375B; --on-panel:#F2F5EF; --on-panel-muted:#AAB5CD;
+  --butler:#8ABB8C; --butler-ink:#16213A; --mint:#C6E2DE; --bubble:#F4F6F1; --bubble-ink:#18223D;
+  --gold:#E3B63E; --gold-ink:#1B2238;
+  --red:#B8404A; --amber:#DDAA2C; --go:#4F8E5F; --on-signal:#FFFFFF;
+  --sky:#141A3C; --gnd:#141A3C; --logo-ink:#FFFFFF;
+  color-scheme:dark;
+}
+
+html{height:100%;box-sizing:border-box;font-size:100%}
+html.big{font-size:118%}
+*,*::before,*::after{box-sizing:border-box}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:1rem;line-height:1.55}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--leaf);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+
+.app{height:100%;display:grid;grid-template-rows:auto 1fr;gap:.75rem;padding-inline:16px;padding-block:.75rem 0;max-width:1240px;margin-inline:auto}
+
+/* 상단 */
+.top{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-width:0}
+.brand{display:flex;align-items:center;gap:.6rem;min-width:0;border:0;background:none;padding:0;text-align:left;border-radius:.7rem}
+.chatbtn{display:flex;align-items:center;gap:.3rem;border:0;background:var(--gold);color:var(--gold-ink);border-radius:99px;padding:.2rem .75rem .2rem .25rem;min-height:2.25rem;font-size:.8125rem;font-weight:600;white-space:nowrap}
+.chatbtn svg{width:1.7rem;height:1.7rem}
+.mark{flex:none;width:2.5rem;height:2.5rem;border-radius:.7rem;background:var(--panel);display:grid;place-items:center}
+.mark svg{width:1.7rem;height:1.7rem}
+.name{font-family:var(--font-display);font-size:1.5rem;line-height:1;font-weight:400;display:block;white-space:nowrap}
+.tagline{display:none;font-size:.8125rem;color:var(--muted)}
+.top-r{display:flex;align-items:center;gap:.5rem;flex:none}
+.proto{font-size:.75rem;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:.15rem .6rem;white-space:nowrap}
+.size{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:.3rem .7rem;font-size:.8125rem;min-height:2.25rem;white-space:nowrap}
+.size[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pts{display:none;font-family:var(--font-display);font-size:1.05rem;background:var(--sunk);border-radius:99px;padding:.2rem .7rem;white-space:nowrap}
+.top{flex-wrap:wrap}
+
+/* 틀 */
+.shell{min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"view" "nav"}
+.chat,.work{grid-area:view;min-height:0;min-width:0}
+@media (max-width:899.98px){
+  .app:not([data-view="chat"]) .chat{display:none}
+  .app[data-view="chat"] .work{display:none}
+  .app[data-view="home"]{padding:0;gap:0;grid-template-rows:minmax(0,1fr)}
+  .app[data-view="home"] .top,.app[data-view="home"] .nav{display:none}
+  .app[data-view="home"] .work{border:0;border-radius:0}
+  .proto{display:none}
+  /* 챗봇 화면: 위쪽 로고 줄 없이 화면 전체를 네이비로 */
+  body:has(.app[data-view="chat"]){background:var(--panel)}
+  body:has(.app[data-view="home"]){background:var(--sky)}
+  .app[data-view="chat"]{padding:0;gap:0;grid-template-rows:minmax(0,1fr);background:var(--panel)}
+  .app[data-view="chat"] .top{display:none}
+  .app[data-view="chat"] .chat{border-radius:0}
+  .app[data-view="chat"] .chat-head{padding-top:1.5rem}
+  .app[data-view="chat"] .nav{margin-top:0;padding-inline:16px;border-top-color:var(--panel-2);background:var(--panel)}
+  .app[data-view="chat"] .nav button{color:var(--on-panel-muted);opacity:1}
+}
+.app[data-pane="home"] .work{background:var(--sky);overflow:hidden;border-color:transparent}
+
+/* 하단 탭 */
+.nav{grid-area:nav;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding-block:.35rem .5rem;margin-top:.5rem;border-top:1px solid var(--line)}
+.nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.35rem 0;border-radius:.7rem;color:var(--muted);font-size:.6875rem;line-height:1.2;min-height:3.25rem;opacity:.75}
+.nav svg{width:1.6rem;height:1.6rem;flex:none}
+.nav button.on{background:var(--panel);color:var(--on-panel);opacity:1}
+
+/* 대화 패널 */
+.chat{background:var(--panel);color:var(--on-panel);border-radius:1.25rem;display:flex;flex-direction:column;overflow:hidden}
+.chat :focus-visible{outline-color:var(--gold)}
+.chat-head{padding:1.1rem 1.1rem .6rem;display:flex;justify-content:space-between;align-items:flex-end;gap:.75rem}
+.chat-head h1{font-family:var(--font-display);font-weight:400;font-size:1.9rem;line-height:1.1;text-wrap:balance}
+.chat-head h1 em{font-style:normal;color:var(--butler)}
+.status{font-size:.75rem;color:var(--on-panel-muted);text-align:right;max-width:9.5rem;line-height:1.35}
+.status::before{content:"";display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:var(--butler);margin-right:.35rem}
+.status.basic::before{background:var(--gold)}
+.log{flex:1;min-height:0;overflow-y:auto;padding:.5rem 1.1rem 1rem;display:flex;flex-direction:column;gap:.75rem}
+.msg{display:flex;gap:.5rem;align-items:flex-start;max-width:100%}
+.msg .av{flex:none;width:2.1rem;height:2.1rem}
+.msg .body{min-width:0;display:flex;flex-direction:column;gap:.4rem;align-items:flex-start}
+.bubble{background:var(--bubble);color:var(--bubble-ink);border-radius:1.1rem;border-top-left-radius:.3rem;padding:.6rem .9rem;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.95rem}
+.msg.user{justify-content:flex-end}
+.msg.user .bubble{background:var(--mint);border-radius:1.1rem;border-top-right-radius:.3rem;max-width:85%}
+.bubble.pending{color:var(--muted)}
+.bubble.note{background:var(--panel-2);color:var(--on-panel-muted);font-size:.8125rem}
+.go-chip{border:0;background:var(--gold);color:var(--gold-ink);border-radius:99px;padding:.4rem .9rem;font-size:.875rem;font-weight:600;min-height:2.25rem}
+.suggest{display:flex;gap:.5rem;overflow-x:auto;padding:.1rem 1.1rem .7rem;scrollbar-width:none}
+.suggest::-webkit-scrollbar{display:none}
+.suggest button{flex:none;border:1px solid var(--panel-2);background:var(--panel-2);color:var(--on-panel);border-radius:99px;padding:.4rem .85rem;font-size:.8125rem;min-height:2.25rem;white-space:nowrap}
+.composer{display:flex;gap:.5rem;padding:.7rem 1.1rem 1.1rem;border-top:1px solid var(--panel-2)}
+.composer input{flex:1;min-width:0;border:0;border-radius:99px;background:var(--bubble);color:var(--bubble-ink);padding:.7rem 1rem;font-size:1rem;min-height:2.9rem}
+.composer input::placeholder{color:#6B7489}
+.composer button{flex:none;border:0;border-radius:99px;background:var(--gold);color:var(--gold-ink);font-family:var(--font-display);font-size:1.1rem;padding:0 1.15rem;min-height:2.9rem;min-width:4.2rem}
+
+/* 작업 공간 */
+.work{overflow-y:auto;background:var(--surface);border-radius:1.25rem;border:1px solid var(--line)}
+.pane{padding:1.25rem 1.1rem 1.75rem;display:flex;flex-direction:column;gap:1.1rem;max-width:46rem;margin-inline:auto}
+.ph .who{font-family:var(--font-display);color:var(--leaf);font-size:1.05rem}
+.ph h2{font-family:var(--font-display);font-weight:400;font-size:2.1rem;line-height:1.08;text-wrap:balance}
+.ph h2 em{font-style:normal;color:var(--leaf)}
+.ph p{color:var(--muted);font-size:.9rem;margin-top:.35rem;max-width:34rem}
+h3{font-family:var(--font-display);font-weight:400;font-size:1.25rem;line-height:1.2}
+.sub{display:flex;flex-direction:column;gap:.6rem}
+.sub-h{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem}
+.ex{font-size:.75rem;color:var(--muted);white-space:nowrap}
+.demo{background:var(--tint);border-radius:.8rem;padding:.65rem .9rem;font-size:.875rem}
+.btn{border:0;border-radius:.6rem;background:var(--gold);color:var(--gold-ink);font-family:var(--font-display);font-size:1.15rem;padding:.7rem 1rem;min-height:3rem;width:100%}
+.btn.quiet{background:var(--sunk);color:var(--ink)}
+.btn.sm{width:auto;font-size:1rem;min-height:2.5rem;padding:.4rem .9rem}
+.btn:disabled{opacity:.55;cursor:default}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.list>li{padding:.75rem 0;border-top:1px solid var(--line)}
+.list>li:first-child{border-top:0}
+.num{font-variant-numeric:tabular-nums}
+
+/* CCTV */
+.cam{border-radius:.9rem;overflow:hidden;background:var(--panel)}
+.cam-bar{color:var(--on-panel);text-align:center;font-family:var(--font-display);font-size:1.05rem;padding:.8rem .75rem}
+.cam-view{position:relative;aspect-ratio:16/9;max-width:100%;background:#0b0f0d;overflow:hidden}
+.cam-view svg{position:absolute;inset:0;width:100%;height:100%}
+.cam-view .ov{position:absolute;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem;color:#DFF3DF;text-shadow:0 0 3px #000;letter-spacing:.04em}
+.ov.tl{top:.5rem;left:.6rem}.ov.tr{top:.5rem;right:.6rem}.ov.bl{bottom:.5rem;left:.6rem}
+.rec::before{content:"";display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:#E0545C;margin-right:.35rem}
+.scan{position:absolute;left:0;right:0;height:22%;background:linear-gradient(#ffffff00,#ffffff14,#ffffff00);animation:scan 5s linear infinite}
+@keyframes scan{from{top:-25%}to{top:105%}}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:.35rem .85rem;font-size:.875rem;min-height:2.25rem}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* 신고 */
+.lights{display:flex;flex-direction:column;gap:.9rem}
+.light{display:flex;align-items:center;justify-content:space-between;gap:1rem;border:0;background:none;padding:0;text-align:left;width:100%}
+.light .lbl{font-family:var(--font-display);font-size:1.3rem;line-height:1.2}
+.light .lbl small{display:block;font-family:var(--font-body);font-size:.8125rem;color:var(--muted)}
+.lamp{flex:none;width:6rem;height:6rem;border-radius:50%;display:grid;place-content:center;text-align:center;color:var(--on-signal);font-family:var(--font-display);font-size:1.7rem;line-height:1;box-shadow:0 0 0 .2rem var(--surface),0 0 0 .3rem currentColor}
+.lamp small{display:block;font-size:1.05rem;margin-top:.2rem}
+.lamp.r{background:var(--red)}.lamp.a{background:var(--amber);color:var(--gold-ink)}.lamp.g{background:var(--go)}
+.light:active .lamp{transform:scale(.97)}
+.notice{background:var(--go);color:var(--on-signal);border-radius:.9rem;padding:1rem;display:flex;flex-direction:column;gap:.5rem}
+.notice h3{color:var(--on-signal)}
+.notice li{background:#00000026;border-radius:.5rem;padding:.55rem .75rem;font-size:.9rem}
+.notice ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.4rem}
+.notice .ex{color:#FFFFFFCC}
+
+/* 호출 화면 */
+.alert{min-height:100%;padding:2rem 1.25rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center;color:var(--on-signal);border-radius:1.2rem}
+.alert.r{background:var(--red)}.alert.a{background:var(--amber);color:var(--gold-ink)}
+.alert.z{background:var(--surface);color:var(--ink)}
+.alert h2{font-family:var(--font-display);font-weight:400;font-size:2.3rem;line-height:1.1}
+.alert.z h2 em{font-style:normal;color:var(--red)}
+.alert .count{font-family:var(--font-display);font-size:2.6rem;line-height:1;width:7.5rem;height:7.5rem;border-radius:50%;border:.35rem solid currentColor;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.alert.z .count{border-color:var(--red)}
+.alert p{max-width:24rem}
+.alert .card{background:#00000022;border-radius:.8rem;padding:.75rem 1rem;font-size:.9rem;width:100%;max-width:22rem}
+.alert.z .card{background:var(--sunk)}
+.alert .cancel{border:0;border-radius:.6rem;background:#00000040;color:inherit;font-family:var(--font-display);font-size:1.15rem;min-height:3rem;width:100%;max-width:22rem}
+.alert.z .cancel{background:var(--red);color:var(--on-signal)}
+.alert .fine{font-size:.8125rem;opacity:.9}
+
+/* 의료 */
+.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+.filters label{display:flex;flex-direction:column;gap:.2rem;font-size:.75rem;color:var(--muted);min-width:0}
+.filters select{background:var(--panel);color:var(--on-panel);border:0;border-radius:.7rem;padding:.65rem .6rem;font-family:var(--font-display);font-size:1.05rem;min-height:3rem;min-width:0;width:100%}
+.map{width:100%;height:auto;border-radius:.9rem;display:block;border:1px solid var(--line)}
+.pin{cursor:pointer}
+.pin path{fill:var(--ink)}.pin circle{fill:var(--surface)}.pin .x{fill:var(--go)}
+.pin.sel path{fill:var(--red)}
+.place{display:flex;justify-content:space-between;gap:.75rem;align-items:flex-start}
+.place.sel{background:var(--tint);margin-inline:-.6rem;padding-inline:.6rem;border-radius:.6rem;border-top-color:transparent}
+.place .nm{font-weight:600}
+.place .meta{font-size:.8125rem;color:var(--muted)}
+.place .side{flex:none;text-align:right;display:flex;flex-direction:column;gap:.35rem;align-items:flex-end}
+.star{color:var(--go);font-weight:600;font-size:.875rem}
+
+.view{display:flex;flex-direction:column;gap:1.1rem}
+.back{align-self:flex-start;border:0;background:none;color:var(--muted);padding:.3rem .2rem;min-height:2.25rem;font-size:.9rem;border-radius:.4rem}
+.tags{display:flex;gap:.4rem;flex-wrap:wrap}
+.tags span{background:var(--panel);color:var(--on-panel);border-radius:.4rem;padding:.2rem .65rem;font-family:var(--font-display);font-size:.95rem}
+.hcard{border:1px solid var(--line);border-radius:.9rem;padding:1rem;display:flex;flex-direction:column;gap:.5rem}
+.hcard .meta{font-size:.8125rem;color:var(--muted)}
+.info{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.35rem .9rem;margin:0;font-size:.9rem}
+.info dt{color:var(--muted);white-space:nowrap}
+.info dd{margin:0}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.4rem,1fr));gap:.4rem}
+.slots button{border:1px solid var(--line);background:var(--surface);border-radius:.6rem;min-height:2.6rem;font-variant-numeric:tabular-nums}
+.slots button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.slots button:disabled{color:var(--muted);background:var(--sunk);text-decoration:line-through;cursor:default}
+.done{background:var(--tint);border-radius:.9rem;padding:1rem;display:flex;flex-direction:column;gap:.5rem}
+.done strong{font-family:var(--font-display);font-weight:400;font-size:1.35rem;line-height:1.2}
+.place .bk{font-size:.8125rem;color:var(--leaf);font-weight:600}
+
+/* 마음 */
+.moods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem}
+.moods button{border:2px solid transparent;background:var(--tint);border-radius:.9rem;padding:.7rem .4rem;display:flex;flex-direction:column;align-items:center;gap:.25rem;font-family:var(--font-display);font-size:1.1rem;min-height:5rem}
+.moods button[aria-pressed="true"]{border-color:var(--ink);background:var(--surface)}
+.moods svg{width:2.2rem;height:2.2rem}
+.say{display:flex;gap:.6rem;align-items:flex-start}
+.say .av{flex:none;width:2.2rem;height:2.2rem}
+.say .tx{background:var(--tint);border-radius:1rem;border-top-left-radius:.3rem;padding:.6rem .9rem;font-size:.95rem;display:flex;flex-direction:column;gap:.5rem;align-items:flex-start;min-width:0}
+.chart{background:var(--sunk);border-radius:.9rem;padding:.9rem .9rem .6rem}
+.bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.5rem;align-items:end;height:8rem}
+.bars div{background:var(--ink);border-radius:.25rem .25rem 0 0;min-height:.25rem}
+.bars div.today{background:var(--go)}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.5rem;text-align:center;font-size:.75rem;color:var(--muted);border-top:2px solid var(--ink);padding-top:.25rem}
+.verdict{font-family:var(--font-display);font-size:1rem}
+.verdict b{font-weight:400;color:var(--red)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.1rem}
+.dial{width:9rem;height:9rem;border-radius:50%;margin-inline:auto;display:grid;place-items:center;background:conic-gradient(var(--butler) calc(var(--p,0)*1%),var(--sunk) 0)}
+.dial span{width:5.2rem;height:5.2rem;border-radius:50%;background:var(--panel);color:var(--on-panel);display:grid;place-items:center;font-family:var(--font-display);font-size:1.6rem;font-variant-numeric:tabular-nums}
+.field{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:.6rem;padding:.65rem .8rem;min-height:2.9rem;min-width:0}
+.hearts{display:flex;gap:.3rem;flex-wrap:wrap;color:var(--go);font-size:1rem;min-height:1.5rem}
+.diary li{font-size:.9rem}
+.diary time{display:block;font-size:.75rem;color:var(--muted)}
+.empty{color:var(--muted);font-size:.875rem}
+
+/* 커뮤니티 */
+.post{display:flex;justify-content:space-between;gap:.75rem;align-items:center}
+.post .t{font-weight:600;overflow-wrap:anywhere}
+.post .m{font-size:.8125rem;color:var(--muted)}
+.kind{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;color:var(--muted)}
+.kind::before{content:"";width:.6rem;height:.6rem;border-radius:50%;background:var(--amber)}
+.kind.k2::before{background:var(--go)}.kind.k3::before{background:var(--red)}
+.loc{align-self:flex-start;background:var(--sunk);border-radius:99px;padding:.15rem .7rem;font-size:.8125rem}
+.write{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;background:var(--sunk);border-radius:.9rem;padding:.9rem}
+.write .full{grid-column:1/-1}
+.err{color:var(--red);font-size:.8125rem}
+
+/* 걷기 */
+.walk-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1.1rem;align-items:center}
+.ring{width:11rem;max-width:100%;height:auto;display:block;margin-inline:auto}
+.ring .trk{stroke:var(--sunk)}.ring .prg{stroke:var(--go);transition:stroke-dashoffset .4s}
+.ring text{fill:var(--ink);font-family:var(--font-display)}
+.ring .k{fill:var(--muted);font-family:var(--font-body)}
+.cmp{display:flex;flex-direction:column;gap:.6rem}
+.cmp .ln{display:grid;grid-template-columns:3rem minmax(0,1fr) 5.2rem;gap:.5rem;align-items:center;font-size:.875rem}
+.cmp .tr{height:.6rem;background:var(--sunk);border-radius:99px;overflow:hidden}
+.cmp .tr i{display:block;height:100%;background:var(--muted);border-radius:99px}
+.cmp .ln.t .tr i{background:var(--red)}
+.cmp .ln.t b{color:var(--red)}
+.cmp b{font-family:var(--font-display);font-weight:400;font-size:1.05rem;text-align:right}
+.rules{background:var(--tint);border-radius:.9rem;padding:.8rem 1rem;font-size:.9rem;list-style:none;margin:0;display:flex;flex-direction:column;gap:.25rem}
+.rules li::before{content:"· "}
+.streak{display:flex;gap:.35rem}
+.streak i{width:1.5rem;height:1.5rem;border-radius:50%;background:var(--sunk);display:block}
+.streak i.on{background:var(--go)}
+.badge{font-size:.8125rem;background:var(--panel);color:var(--on-panel);border-radius:99px;padding:.15rem .7rem}
+.zero{border:1px solid var(--line);border-radius:.9rem;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.5rem}
+.zero h3 em{font-style:normal;color:var(--red)}
+
+/* 집 첫 화면: 사용자가 그린 그림을 벡터로 다듬어 쓰고, 로고와 집이 화면 비율에 맞춰 따로 자리 잡는다 */
+.pane.home{padding:0;max-width:none;height:100%;gap:0;overflow:hidden;background:var(--sky)}
+.scene{display:block;width:100%;flex:1;min-height:0;overflow:visible;transform-origin:var(--ox,50%) var(--oy,50%)}
+.scene.leaving{transform:scale(2.2);opacity:0;transition:transform .33s ease-in,opacity .33s ease-in}
+.butler,.room{cursor:pointer;outline:none}
+.scene .hit{fill:transparent}
+.room:hover .hit,.butler:hover .hit{fill:#FFFFFF24}
+.room:focus-visible .hit,.butler:focus-visible .hit{stroke:#F0525B;stroke-width:8;stroke-dasharray:16 10}
+.room .off{transition:opacity .35s}
+#room-sos .off{fill:#141A3C;opacity:.74;transition:opacity .12s}
+#room-sos.act .off{opacity:0}
+#room-sos.act .o2{transition-delay:.18s}
+#room-sos.act .o3{transition-delay:.36s}
+.room .glow{fill:none;stroke-width:6;opacity:0;transform-box:fill-box;transform-origin:center}
+#room-sos.act .glow{animation:lightGlow .5s both}
+#room-sos.act .g2{animation-delay:.18s}
+#room-sos.act .g3{animation-delay:.36s}
+@keyframes lightGlow{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(2.1)}}
+#room-mind .off{opacity:.8}
+#room-mind.lit .off{opacity:0}
+.room .cone{opacity:0;transition:opacity .35s}
+.room.lit .cone{opacity:1}
+.room .ppl{opacity:0;transform:translateY(-20px);transition:opacity .3s .2s,transform .3s .2s}
+.room.lit .ppl{opacity:1;transform:none}
+.room .ecg{stroke-dasharray:100;stroke-dashoffset:100;opacity:0}
+.room.act .ecg{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset .6s linear .05s}
+.room .pulse{opacity:0;transform-box:fill-box;transform-origin:center}
+.room.act .pulse{animation:pinPulse .6s .25s both}
+.room.act .pulse.p2{animation-delay:.5s}
+@keyframes pinPulse{from{opacity:1;transform:scale(.7)}to{opacity:0;transform:scale(2.3)}}
+.room .lens{opacity:0}
+.room.act .lens{opacity:1}
+.room .door{transform-box:fill-box;transform-origin:0% 50%;transition:transform .5s cubic-bezier(.3,.7,.2,1)}
+.room.act .door{transform:scaleX(.14) skewY(-7deg)}
+.radar{opacity:0;pointer-events:none}
+.scene.detect .radar{opacity:1}
+.radar .ring{transform-box:fill-box;transform-origin:center}
+.scene.detect .ring{animation:radarRing 1.1s ease-out both}
+.scene.detect .ring.r2{animation-delay:.25s}
+.scene.detect .ring.r3{animation-delay:.5s}
+@keyframes radarRing{from{transform:scale(.08);opacity:1}to{transform:scale(1);opacity:0}}
+.radar .sweep{transform-box:fill-box;transform-origin:center}
+.scene.detect .sweep{animation:radarSweep 1.2s linear both}
+@keyframes radarSweep{from{transform:rotate(-100deg)}to{transform:rotate(200deg)}}
+.radar .blip{opacity:0;transform-box:fill-box;transform-origin:center}
+.scene.detect .blip{animation:radarBlip .35s both}
+.scene.detect .blip.b1{animation-delay:.35s}.scene.detect .blip.b2{animation-delay:.6s}.scene.detect .blip.b3{animation-delay:.85s}
+@keyframes radarBlip{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1)}}
+.ask{flex:none;margin:6px 16px 14px;display:flex;align-items:center;gap:.6rem;border:0;border-radius:99px;background:#FFFFFF;color:#141A3C;padding:.35rem 1rem .35rem .4rem;min-height:3.25rem;font-family:var(--font-display);font-size:1.15rem;text-align:left}
+.ask svg{width:2.4rem;height:2.4rem;flex:none}
+.ask:focus-visible{outline-color:#F5DF72}
+
+@media (min-width:900px){
+  .app{padding-inline:24px;padding-block:1rem 1rem;gap:1rem}
+  .tagline{display:block}
+  .pts{display:inline-block}
+  .suggest{scrollbar-width:thin;scrollbar-color:var(--panel-2) transparent}
+  .shell{grid-template-columns:minmax(20rem,25rem) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"chat nav" "chat work";column-gap:1rem;row-gap:.75rem}
+  .chat{grid-area:chat}.work{grid-area:work}
+  .chatbtn,.ask{display:none}
+  .nav{display:flex;flex-wrap:wrap;gap:.4rem;border-top:0;margin-top:0;padding-block:0}
+  .nav button{flex-direction:row;gap:.4rem;padding:.4rem .85rem .4rem .6rem;font-size:.9rem;min-height:2.75rem;border-radius:99px;border:1px solid var(--line);opacity:1}
+  .nav button.on{border-color:var(--panel)}
+  .nav svg{width:1.4rem;height:1.4rem}
+  .pane{padding:1.75rem 1.75rem 2.25rem}
+}
+@media (prefers-reduced-motion:reduce){.scan{animation:none;display:none}.ring .prg{transition:none}.scene *{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-butler" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="48" fill="#8ABB8C"/>
+      <g fill="none" stroke="#16213A" stroke-width="3"><circle cx="38" cy="42" r="8.5"/><circle cx="62" cy="42" r="8.5"/><path d="M46.5 42h7"/></g>
+      <path fill="#16213A" d="M50 62c-5-8-16-8-21-1-4 5-10 6-16 3 5 10 18 13 27 7 4-2 8-5 10-9 2 4 6 7 10 9 9 6 22 3 27-7-6 3-12 2-16-3-5-7-16-7-21 1z"/>
+    </symbol>
+    <symbol id="i-cctv" viewBox="0 0 24 24"><path fill="currentColor" d="M3.5 5h17v3.4h-17z"/><path fill="#8ABB8C" d="M3.5 6.3h17v.9h-17z"/><path fill="currentColor" d="M4.5 8.4h15v2.3a7.5 7.5 0 0 1-15 0z"/><circle cx="12" cy="12.4" r="2.3" fill="#F2F5EF"/><path fill="currentColor" d="M12 10.9v1.5h1.5a1.5 1.5 0 1 1-1.5-1.5z"/></symbol>
+    <symbol id="i-sos" viewBox="0 0 24 24"><rect x="7.5" y="1.5" width="9" height="21" rx="4.5" fill="currentColor"/><circle cx="12" cy="6" r="2.5" fill="#A6E3A1"/><circle cx="12" cy="12" r="2.5" fill="#EFD76B"/><circle cx="12" cy="18" r="2.5" fill="#D8666B"/></symbol>
+    <symbol id="i-med" viewBox="0 0 24 24"><path fill="currentColor" d="M12 23s8-8.2 8-13.6A8 8 0 0 0 4 9.4C4 14.8 12 23 12 23z"/><circle cx="12" cy="9.3" r="5.6" fill="#F2F5EF"/><path fill="#6FBF7A" d="M10.5 5.6h3v2.2h2.2v3h-2.2V13h-3v-2.2H8.3v-3h2.2z"/></symbol>
+    <symbol id="i-mind" viewBox="0 0 24 24"><path fill="currentColor" d="M12 23s8-8.2 8-13.6A8 8 0 0 0 4 9.4C4 14.8 12 23 12 23z"/><circle cx="12" cy="9.3" r="5.6" fill="#A6E3A1"/><circle cx="10" cy="8.3" r=".9" fill="#16213A"/><circle cx="14" cy="8.3" r=".9" fill="#16213A"/><path d="M9.6 10.6c1.3 1.5 3.5 1.5 4.8 0" fill="none" stroke="#16213A" stroke-width="1.1" stroke-linecap="round"/></symbol>
+    <symbol id="i-comm" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21 4.2 13.1a5 5 0 0 1 7-7.1l.8.8.8-.8a5 5 0 0 1 7 7.1z"/><path fill="#8ABB8C" d="M12.8 6.8a5 5 0 0 1 7 6.3L15 18z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5 1.5 11.5H5V21h14v-9.5h3.5z"/><rect x="10" y="13.5" width="4" height="7.5" fill="#8ABB8C"/></symbol>
+    <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><g fill="#7EE08C"><ellipse cx="8.7" cy="9.6" rx="2.5" ry="3.9"/><ellipse cx="9" cy="16.6" rx="1.8" ry="2"/><ellipse cx="15.3" cy="9.6" rx="2.5" ry="3.9"/><ellipse cx="15" cy="16.6" rx="1.8" ry="2"/></g></symbol>
+  </defs>
+</svg>
+
+<div class="app" id="app" data-view="home" data-pane="home">
+  <header class="top">
+    <button type="button" class="brand" id="homeBtn" aria-label="공집사, 집 화면으로 가기">
+      <span class="mark"><svg aria-hidden="true"><use href="#i-butler"/></svg></span>
+      <span><strong class="name">공집사</strong><span class="tagline">1인 가구를 위한 공동의 집사</span></span>
+    </button>
+    <div class="top-r">
+      <span class="proto">프로토타입</span>
+      <button type="button" class="size" id="sizeBtn" aria-pressed="false">글자 크게</button>
+      <span class="pts" title="리워드 포인트"><span id="ptsTop" class="num">500</span>P</span>
+      <button type="button" class="chatbtn" id="chatBtn"><svg aria-hidden="true"><use href="#i-butler"/></svg>집사</button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <section class="chat" aria-label="AI 공집사와 대화">
+      <div class="chat-head">
+        <h1><em>공집사</em>에게<br>물어보세요</h1>
+        <p class="status" id="aiStatus">AI 공집사가 듣고 있어요.</p>
+      </div>
+      <div class="log" id="log" role="log" aria-live="polite"></div>
+      <div class="suggest" id="suggest">
+        <button type="button">공집사는 어떤 서비스야?</button>
+        <button type="button">허리가 아픈데 근처 정형외과 찾아줘</button>
+        <button type="button">요즘 혼자 있으니 좀 외로워</button>
+        <button type="button">같이 운동할 사람 있을까?</button>
+        <button type="button">현관 밖에 누가 있는 것 같아</button>
+      </div>
+      <form class="composer" id="composer" autocomplete="off">
+        <label class="sr" for="msg">공집사에게 보낼 메시지</label>
+        <input id="msg" type="text" placeholder="무엇이든 말씀해 주세요" maxlength="500" enterkeyhint="send">
+        <button type="submit" id="send">보내기</button>
+      </form>
+    </section>
+
+    <nav class="nav" id="nav" aria-label="공집사 기능">
+      <button type="button" data-tab="home"><svg aria-hidden="true"><use href="#i-home"/></svg>홈</button>
+      <button type="button" data-tab="cctv"><svg aria-hidden="true"><use href="#i-cctv"/></svg>CCTV</button>
+      <button type="button" data-tab="sos"><svg aria-hidden="true"><use href="#i-sos"/></svg>신고</button>
+      <button type="button" data-tab="medical"><svg aria-hidden="true"><use href="#i-med"/></svg>의료</button>
+      <button type="button" data-tab="mind"><svg aria-hidden="true"><use href="#i-mind"/></svg>마음</button>
+      <button type="button" data-tab="community"><svg aria-hidden="true"><use href="#i-comm"/></svg>모임</button>
+      <button type="button" data-tab="walk"><svg aria-hidden="true"><use href="#i-walk"/></svg>걷기</button>
+    </nav>
+
+    <main class="work" id="work">
+      <!-- 집 첫 화면 -->
+      <section class="pane home" id="pane-home">
+        <svg class="scene" id="scene" viewBox="0 0 756 1290" preserveAspectRatio="xMaxYMax meet" role="group" aria-label="공집사의 집. 방을 누르면 그 기능이 열려요.">
+          <g id="logoG" transform="translate(0,-28)">
+            <g aria-hidden="true"><path fill="#FFFFFF" fill-rule="evenodd" d="M273.5 165L273.5 165Q270.7 165 268 165.7L268 165.7Q265.3 166.3 262.5 168.2L262.5 168.2Q259.7 170 257.3 173.8L257.3 173.8Q255 177.7 252.5 186.3L251.5 189.7Q249 198.3 248.6 207.3L248.4 210.7Q248 219.7 249.5 226.8L249.5 226.8Q251 234 253 238.8L253 238.8Q255 243.7 259.7 248L259.7 248Q264.3 252.3 269.7 252.8L269.7 252.8Q275 253.3 278.5 251.3L278.5 251.3Q282 249.3 285.2 246.3L285.2 246.3Q288.3 243.3 291.8 237.7L291.8 237.7Q295.3 232 297.7 223.3L298 222Q300.3 213.3 300.3 206.3L300.3 206.3Q300.3 199.3 298.3 191.5L298.3 191.5Q296.3 183.7 293.3 178.7L293.3 178.7Q290.3 173.7 286.5 170.5L286.5 170.5Q282.7 167.3 279.5 166.2L279.5 166.2Q276.3 165 273.5 165ZM266.2 169.5L266.2 169.5Q268 168.7 270.8 169.2L270.8 169.2Q273.7 169.7 277 173L277 173Q280.3 176.3 282.8 182.5L282.8 182.5Q285.3 188.7 286.3 195.2L286.3 195.2Q287.3 201.7 287.3 208.5L287.3 208.5Q287.3 215.3 286.2 222.7L286.2 222.7Q285 230 282.5 236L282.5 236Q280 242 277.3 245.2L277.3 245.2Q274.7 248.3 273 249.3L273 249.3Q271.3 250.3 268.2 249.8L268.2 249.8Q265 249.3 260.8 245.2L260.8 245.2Q256.7 241 254.7 235.2L254.7 235.2Q252.7 229.3 251.7 223.8L251.7 223.8Q250.7 218.3 250.7 212.2L250.7 212.2Q250.7 206 252.6 197.2L253.7 192.4Q255.7 183.7 257.7 179.5L257.7 179.5Q259.7 175.3 262 172.8L262 172.8Q264.3 170.3 266.2 169.5ZM361.8 164.5L354.3 164.7L353.4 244.3Q353.3 253.3 354.2 254L354.2 254Q355 254.7 364 254.4L417.7 253L418.2 246.3Q418.7 239.7 418.7 230.7L418.7 165.3L412 165.3Q405.3 165.3 404.8 166L404.8 166Q404.3 166.7 404.3 175.7L404.1 205.7Q404 214.7 403.3 215.3L403.3 215.3Q402.7 216 395.5 216.2L395.5 216.2Q388.3 216.3 380.2 216.2L380.2 216.2Q372 216 371.3 215.3L371.3 215.3Q370.7 214.7 370.7 205.7L370.7 174.7Q370.7 165.7 370 165L370 165Q369.3 164.3 361.8 164.5ZM371.2 219.3L371.2 219.3Q372 218.3 381 218.4L402.7 218.7L403.3 219.8Q404 221 404 230L404 239.7Q404 248.7 403.2 250L402.3 251.3L386.3 251.3Q377.3 251.3 377 251.7L377 251.7Q376.7 252 374.3 252L374.3 252Q372 252 371.2 251.2L371.2 251.2Q370.3 250.3 370.3 241.3L370.3 229.3Q370.3 220.3 371.2 219.3ZM489.5 133L489.5 133Q489 133.7 489 135.7L489 135.7Q489 137.7 489.3 138.3L489.7 139L493.8 139Q498 139 498.2 138.8L498.2 138.8Q498.3 138.7 498.5 136L498.5 136Q498.7 133.3 498.3 132.8L498 132.3L494 132.3Q490 132.3 489.5 133ZM477.7 132.7L477.7 132.7Q477.3 133 477.2 133.5L477.2 133.5Q477 134 477 135.8L477 135.8Q477 137.7 477.2 138L477.2 138Q477.3 138.3 477.7 138.5L477.7 138.5Q478 138.7 478.8 138.5L478.8 138.5Q479.7 138.3 482.7 138.5L482.7 138.5Q485.7 138.7 486 138.5L486.3 138.3L486.5 136.2Q486.7 134 486.3 133.3L486.3 133.3Q486 132.7 485.7 132.5L485.7 132.5Q485.3 132.3 481.7 132.3L481.7 132.3Q478 132.3 477.7 132.7ZM489.8 123.8L489.8 123.8Q489.3 124.3 489.3 126.5L489.3 126.5Q489.3 128.7 490 129.2L490 129.2Q490.7 129.7 494.3 129.7L498 129.7L498.3 129.2Q498.7 128.7 498.7 126.5L498.7 126.5Q498.7 124.3 498.3 123.8L498 123.3L494.2 123.3Q490.3 123.3 489.8 123.8ZM478.2 124L477 124.7L477 127.3Q477 130 477.2 130.2L477.2 130.2Q477.3 130.3 478.8 130.3L478.8 130.3Q480.3 130.3 480.7 130L480.7 130Q481 129.7 483.3 129.7L483.3 129.7Q485.7 129.7 486 129.5L486.3 129.3L486.3 128Q486.3 126.7 486 126.3L486 126.3Q485.7 126 485.7 125.3L485.7 125.3Q485.7 124.7 485 124L485 124Q484.3 123.3 481.8 123.3L481.8 123.3Q479.3 123.3 478.2 124ZM246.3 148.6L221 149.3L222 151.7L247.7 152.2Q256.7 152.3 265.7 152.2L294.7 151.8Q303.7 151.7 304.7 151.2L305.7 150.7L304.3 148.7L281 148.7Q272 148.7 271.3 148.2L271.3 148.2Q270.7 147.7 270.8 138.7L271.2 115Q271.3 106 271 104.8L270.7 103.7L269.7 103.3Q268.7 103 262.3 103.3L256 103.7L255.3 148.3ZM538.3 146.2L538.3 146.2Q538.7 145 534.4 137.1L515 101.6Q510.7 93.7 509.8 92.8L509.8 92.8Q509 92 503.2 91.7L503.2 91.7Q497.3 91.3 496 91.8L496 91.8Q494.7 92.3 488.3 98.7L440 147.7L440.5 148.2Q441 148.7 450 148.7L521.3 148.7Q530.3 148.7 534.2 148L538 147.3ZM501.6 105.3L517.1 134.4Q521.3 142.3 521 143.7L520.7 145L500.3 145.7Q491.3 146 482.3 145.9L445.7 145.3L495.7 96.3L496.5 96.8Q497.3 97.3 501.6 105.3ZM577.5 116.7L576.3 66.3L574.7 66.8Q573 67.3 567.7 67L567.7 67Q562.3 66.7 561.7 67.2L561.7 67.2Q561 67.7 561 76.7L561.3 148.3Q561.3 157.3 561.6 166.3L563 209.7L570 209.5Q577 209.3 577.3 208.8L577.3 208.8Q577.7 208.3 577.7 199.3L577.7 144Q577.7 135 578.3 134.3L578.3 134.3Q579 133.7 588 133.5L616.3 133L616.3 130.2Q616.3 127.3 615.8 126.8L615.8 126.8Q615.3 126.3 606.3 126.2L577.7 125.7ZM413.5 63.7L413.5 63.7Q408.3 63.3 407.7 64L407.7 64Q407 64.7 407 73.7L407 143Q407 152 407.3 152.7L407.7 153.3L411.5 153.3Q415.3 153.3 418 152.3L420.7 151.3L419.8 74.3Q419.7 65.3 419.2 64.7L419.2 64.7Q418.7 64 413.5 63.7ZM358.3 63.3L337.3 63.3L337.3 66.3L352.3 66.3L352.8 67.2Q353.3 68 350.7 76.6L333.7 131.4Q331 140 331 141.7L331 143.3L332.7 143.7L333.7 141.8Q334.7 140 337.2 131.4L347.1 98Q349.7 89.3 352.8 80.9L356.3 71.3L356.8 71.8Q357.3 72.3 358.9 81.2L367.8 133.5Q369.3 142.3 370 143L370.7 143.7L372.3 143.2Q374 142.7 379 142.7L384 142.7L384.2 137.5Q384.3 132.3 382.5 123.5L373.2 79.1Q371.3 70.3 371.7 68.5L372 66.7L382 66.7L382.7 64.7L375 64Q367.3 63.3 358.3 63.3ZM293.3 61.6L250 62.7L249.3 65L250.2 65.3Q251 65.7 260 65.4L277.7 64.9Q286.7 64.7 287.3 65.3L287.3 65.3Q288 66 288.3 75L289.7 121Q290 130 290.8 130.7L290.8 130.7Q291.7 131.3 297 131L302.3 130.7L302.3 61.3Z"/><polygon points="97,222 97,249 118,237 139,249 139,222" fill="#FFFFFF"/><polygon points="105,230 118,237 105,244" fill="#141A3C"/><polygon points="131,230 118,237 131,244" fill="#141A3C"/></g>
+            <g class="butler" id="logoButler" tabindex="0" role="button" aria-label="집사와 대화하기"><title>집사와 대화하기</title>
+              <use href="#i-butler" x="36" y="64" width="164" height="164"/>
+              <circle class="hit" cx="118" cy="146" r="84"/>
+            </g>
+          </g>
+          <g id="houseG">
+            <g id="houseArt" aria-hidden="true"><rect x="-4000" y="1276.5" width="4137" height="3" fill="#FFFFFF"/><polygon points="134,505 597,258 756,440 756,493 588,306 196,505" fill="#FFFFFF"/><path fill="#FFFFFF" fill-rule="evenodd" d="M498.2 1087.7L497.3 1085.3L442 1085.3Q433 1085.3 431 1086.7L431 1086.7Q429 1088 421 1088L413 1088L412.7 1087L414 1086L412.5 1085.5Q411 1085 402 1085L298.3 1084.7Q289.3 1084.7 288 1085.7L288 1085.7Q286.7 1086.7 277.7 1086.7L214 1086.7Q205 1086.7 204.3 1086L204.3 1086Q203.7 1085.3 194.7 1085.4L163.7 1085.6Q154.7 1085.7 145.7 1086.3L136.3 1087L137.3 1264.3Q137.3 1273.3 136.7 1273.8L136.7 1273.8Q136 1274.3 127 1274.3L0 1274.3L0 1277.7L127.7 1277.4Q136.7 1277.3 138.3 1278L138.3 1278Q140 1278.7 144 1278L144 1278Q148 1277.3 157 1277.3L499.3 1276.7L499 1099Q499 1090 498.2 1087.7ZM404 985L404 985Q398.7 985 393.3 987.5L393.3 987.5Q388 990 384.7 993.7L384.7 993.7Q381.3 997.3 379.5 1001.7L379.5 1001.7Q377.7 1006 377.8 1012L377.8 1012Q378 1018 380.3 1023L380.3 1023Q382.7 1028 386 1031.2L386 1031.2Q389.3 1034.3 392.7 1036L392.7 1036Q396 1037.7 402.3 1038L402.3 1038Q408.7 1038.3 413.7 1036.3L413.7 1036.3Q418.7 1034.3 422.3 1030.8L422.3 1030.8Q426 1027.3 428.3 1022.3L428.3 1022.3Q430.7 1017.3 430.7 1011.7L430.7 1011.7Q430.7 1006 428.3 1000.8L428.3 1000.8Q426 995.7 422.3 992.3L422.3 992.3Q418.7 989 414 987L414 987Q409.3 985 404 985ZM395.2 994.8L395.7 987.7L403.5 987.7Q411.3 987.7 411.8 988.2L411.8 988.2Q412.3 988.7 412.3 991.3L412.3 994L411 994.3L411 998L412.3 998.3L412.3 1002L419.2 1002.3Q426 1002.7 426.8 1003.3L426.8 1003.3Q427.7 1004 427.7 1011.7L427.7 1019.3L413.7 1020L412 1024.7L411 1024L411 1021L411 1027.7L412.3 1028L412.3 1031.2Q412.3 1034.3 411.8 1034.8L411.8 1034.8Q411.3 1035.3 403.3 1035.3L395.3 1035.3L394.7 1020.3L388 1020.2Q381.3 1020 380.8 1019.5L380.8 1019.5Q380.3 1019 380.3 1011.2L380.3 1011.2Q380.3 1003.3 381 1002.8L381 1002.8Q381.7 1002.3 388.2 1002.2L394.7 1002ZM236.1 937.3L235.9 930.3Q235.7 921.3 235.2 921L235.2 921Q234.7 920.7 225.7 920.9L196.7 921.5Q187.7 921.7 187.3 922L187.3 922Q187 922.3 187.2 931.3L187.4 938.3Q187.7 947.3 188 947.7L188 947.7Q188.3 948 197.3 947.8L226.7 947.2Q235.7 947 236 946.7L236 946.7Q236.3 946.3 236.1 937.3ZM191.8 932.7L192 927.3L194.7 927.2Q197.3 927 199.2 926.5L199.2 926.5Q201 926 210 926.1L230 926.3L230.3 927.2Q230.7 928 230.7 935.2L230.7 942.3L192.3 942.3L192 940.2Q191.7 938 191.8 932.7ZM383 935.3L382.3 919.3L344 919.9Q335 920 334.7 920.3L334.7 920.3Q334.3 920.7 334.6 929.7L335 946L382.7 945.3L383 944.8Q383.3 944.3 383 935.3ZM349.8 940.5L349.7 940.3L351.7 936.8Q353.7 933.3 355.3 931L357 928.7L358.8 930.7Q360.7 932.7 361 933.3L361 933.3Q361.3 934 363.8 937L366.3 940L365.7 940.7L364.8 940.5Q364 940.3 358 940.3L358 940.3Q352 940.3 351.8 940.5L351.8 940.5Q351.7 940.7 350.8 940.7L350.8 940.7Q350 940.7 349.8 940.5ZM716.3 889.7L716.3 889.7Q715 888.7 708.5 888.8L708.5 888.8Q702 889 700.8 889.8L699.7 890.7L702.7 891.3L701 892.8Q699.3 894.3 691.9 899.4L666 917.3L664.7 916.7L664.7 915.3L664.2 915.7Q663.7 916 662.8 918.3L662 920.7L664 920L664.3 928.3L664.8 928.5Q665.3 928.7 672.7 923.4L707 898.9Q714.3 893.7 715.3 892.2L716.3 890.7L717.7 890.7ZM596.8 635.8L589 636.3L589.3 649.7L697.7 648.3L697.3 635L613.7 635.3Q604.7 635.3 596.8 635.8ZM163.7 584.2L162 585.3L163.2 679Q163.3 688 164 689.5L164.7 691L167.7 690L168 657.7L214 657L214 659L345.3 658L345.3 680Q345.3 689 345.7 690L346 691L353.3 691L354.4 654.7Q354.7 645.7 353 640.5L353 640.5Q351.3 635.3 349 633.3L349 633.3Q346.7 631.3 344.7 630.5L344.7 630.5Q342.7 629.7 333.7 629.7L233.3 630.3Q224.3 630.3 223 631.7L223 631.7Q221.7 633 212.7 633L188 633L187.1 611.3Q186.7 602.3 184.7 596.3L184.7 596.3Q182.7 590.3 180.5 587.7L180.5 587.7Q178.3 585 176.3 584.2L176.3 584.2Q174.3 583.3 169.8 583.2L169.8 583.2Q165.3 583 163.7 584.2ZM755.7 686L755.7 503L675.7 503Q666.7 503 657.7 503.1L395 506L395.6 683Q395.7 692 394.5 692.8L393.3 693.7L393.5 694.2Q393.7 694.7 394.8 695.3L394.8 695.3Q396 696 405 696L495.7 696Q504.7 696 513.7 695.8L573 694.8Q582 694.7 591 694.7L755.7 695ZM477 534.7L477 534.7Q478 535.3 478.5 537L478.5 537Q479 538.7 479.1 547.7L479.3 574.3Q479.3 583.3 478.5 584.7L477.7 586L434 587.7Q425 588 424 587.2L424 587.2Q423 586.3 422.8 577.3L422.2 547.7Q422 538.7 422.8 537.2L423.7 535.7L467 534.3Q476 534 477 534.7ZM551.2 533.5L551.2 533.5Q552 534 552.5 535.3L552.5 535.3Q553 536.7 553.1 545.7L553.5 572Q553.7 581 552.5 583L551.3 585L510 586.6Q501 587 499.2 586.2L497.3 585.3L496.3 546.7Q496 537.7 497 536L498 534.3L541.3 533.2Q550.3 533 551.2 533.5ZM708.7 528.3L708.7 528.3Q711 530 714.5 534.5L714.5 534.5Q718 539 719.7 543.5L719.7 543.5Q721.3 548 721.3 557L721.3 557.7Q721.3 566.7 719.8 572.3L719.8 572.3Q718.3 578 715 586.2L715 586.2Q711.7 594.3 708.3 600.5L708.3 600.5Q705 606.7 699.9 614.1L693.7 623L715.7 622.8Q724.7 622.7 725.3 623.3L725.3 623.3Q726 624 726 628.8L726 628.8Q726 633.7 725.3 634.3L725.3 634.3Q724.7 635 715.8 635.2L707 635.3L707 679.3Q707 688.3 707.7 688.8L708.3 689.3L707.8 690Q707.3 690.7 703.3 690.7L703.3 690.7Q699.3 690.7 698.5 689.8L698.5 689.8Q697.7 689 697.6 680L697.3 659L589.3 659L589.3 681.3Q589.3 690.3 588.8 690.8L588.8 690.8Q588.3 691.3 584.3 691.2L580.3 691L579.7 636L569.7 635.6Q560.7 635.3 560.2 634.8L560.2 634.8Q559.7 634.3 559.7 629.8L559.7 629.8Q559.7 625.3 560.3 624.5L560.3 624.5Q561 623.7 570 623.6L592.7 623.3L592.7 609.3L586.7 609.3Q580.7 609.3 579.7 608.8L578.7 608.3L582.6 591.1Q584.7 582.3 586.3 581L586.3 581Q588 579.7 595.3 579.7L602.7 579.7L603.3 580.8Q604 582 606 590.8L606 591.2Q608 600 609.5 603.8L611 607.7L610.2 608.3Q609.3 609 603.7 609.2L598 609.3L598.3 623.7L687.3 623.3L687.7 622.3L685.2 619.3Q682.7 616.3 678 608.7L677.4 607.7Q672.7 600 669.1 591.7L667.3 587.6Q663.7 579.3 661.7 571L661.7 571Q659.7 562.7 660.2 554.7L660.2 554.7Q660.7 546.7 662.5 542.2L662.5 542.2Q664.3 537.7 666 535.3L666 535.3Q667.7 533 671.2 530L671.2 530Q674.7 527 679.5 525L679.5 525Q684.3 523 687.8 522.7L687.8 522.7Q691.3 522.3 694.8 522.8L694.8 522.8Q698.3 523.3 702.3 525L702.3 525Q706.3 526.7 708.7 528.3Z"/><path fill="#F5DF72" fill-rule="evenodd" d="M195.5 924.7L190 925.3L190.7 933L215.3 933.7L189.7 934.3L190.7 942.7L232.7 942.3L232.7 934.3L229 933.7L232.7 932.7L232.5 928.8Q232.3 925 231.8 924.7L231.8 924.7Q231.3 924.3 222.3 924.2L210 924.1Q201 924 195.5 924.7ZM309 935.7L308.7 929.7Q308.3 920.7 308 920.3L308 920.3Q307.7 920 298.7 920.2L261 921L260.7 921.5Q260.3 922 260.6 931L260.8 937.3Q261 946.3 261.5 946.7L261.5 946.7Q262 947 271 946.9L299 946.5Q308 946.3 308.7 945.5L308.7 945.5Q309.3 944.7 309 935.7ZM456.8 837.3L448 837L438.2 876.9Q436 885.7 434.7 888.7L433.3 891.7L434.5 892.3Q435.7 893 444.7 892.9L477.7 892.7L479 890.7L478 890Q477 889.3 475.1 880.5L465.7 837.7ZM406.7 880.7L406.7 820.3L377 820.1Q368 820 359 820.2L274.3 822L274 881Q274 890 273.2 890.8L272.3 891.7L273.5 892.3Q274.7 893 283.7 893L407.3 892.7L408.7 890.7L406.7 889.7ZM135.7 695L135 695.3L136 892.3L141.2 892.5Q146.3 892.7 147.7 893.3L149 894L150.2 893.3Q151.3 892.7 160.3 892.7L185.3 892.7Q194.3 892.7 195.3 892.2L196.3 891.7L195.5 890.7Q194.7 889.7 196.6 880.9L206.7 835L203.3 835Q200 835 198.8 833.8L198.8 833.8Q197.7 832.7 196.6 823.7L191.7 783.6Q190.7 774.7 191.5 772.8L192.3 771L195 772.3L202 830L233.7 830.3Q242.7 830.3 243.8 831.5L245 832.7L243.7 835L233 835.7L243.7 876.6Q246 885.3 246 887.8L246 890.3L243.7 891L242.7 889Q241.7 887 239.5 878.3L229 835.3L211.7 835L199 891L197.3 891.3L198.3 892Q199.3 892.7 208.3 892.7L233 892.7Q242 892.7 243.3 892L243.3 892Q244.7 891.3 246.3 892.2L246.3 892.2Q248 893 256 893L256 893Q264 893 265.2 892.3L266.3 891.7L265.5 890.7Q264.7 889.7 264.7 880.7L264.7 822.3L243 822L243.3 809.7L437.3 807.7L438.2 809.5Q439 811.3 438.5 814.7L438.5 814.7Q438 818 437.3 819L436.7 820L418 820.3L418 890.3L416 891L417.3 892Q418.7 893 424.5 892.8L424.5 892.8Q430.3 892.7 431.3 891.8L432.3 891L430.7 890.3L431.2 886.8Q431.7 883.3 434 874.6L443.7 837.7L433 837L431.7 834.7L432.5 833.7Q433.3 832.7 442.3 832.5L474.7 832L480.6 783.6Q481.7 774.7 482.7 773.8L483.7 773L484.7 773.7Q485.7 774.3 485.8 775.5L485.8 775.5Q486 776.7 484.9 785.6L480.1 826.1Q479 835 478 836L478 836Q477 837 473.5 837.2L470 837.3L478 872.9Q480 881.7 480.5 885.8L481 890L479.7 891L480.3 891.8Q481 892.7 490 892.7L663 893L664 890.7L693 890.7Q702 890.7 702.3 891L702.7 891.3L701.7 892L702.5 891.3Q703.3 890.7 709.2 890.7L715 890.7L715.7 892L716.3 890.7L755.7 891L755.7 693L591 692.7Q582 692.7 573 692.8L513.7 693.8Q504.7 694 495.7 694L396 694L395.7 691.3L394.3 693.7L341 694L341 711.3L345.8 711.5Q350.7 711.7 356.8 718.2L370.7 733L370 733.7Q369.3 734.3 360.3 734.2L357 734.1Q348 734 341.3 734.5L341.3 734.5Q334.7 735 325.7 735L307.3 735L306.7 734L322.8 718.8Q329.3 712.7 333.8 712.3L338.3 712L337.3 694L140.3 694L139 696.3L136.3 694.7ZM548.5 541.2L548.5 541.2Q548.3 539.7 548 539.3L548 539.3Q547.7 539 538.7 539.3L501 540.3L500.7 541Q500.3 541.7 500.5 550.7L500.8 570.7Q501 579.7 501.5 580.2L501.5 580.2Q502 580.7 505 580.2L505 580.2Q508 579.7 514.7 573.6L542 548.7Q548.7 542.7 548.5 541.2ZM322.5 534.3L322.5 534.3Q320 534.3 317.7 535.3L317.7 535.3Q315.3 536.3 313.3 538.2L313.3 538.2Q311.3 540 310 543.2L310 543.2Q308.7 546.3 308.7 548.3L308.7 548.3Q308.7 550.3 309.8 553.2L309.8 553.2Q311 556 313 558L313 558Q315 560 317.5 561L317.5 561Q320 562 322.8 562L322.8 562Q325.7 562 327.8 561.2L327.8 561.2Q330 560.3 332.2 558.3L332.2 558.3Q334.3 556.3 335.5 554L335.5 554Q336.7 551.7 336.7 548.2L336.7 548.2Q336.7 544.7 335.2 542L335.2 542Q333.7 539.3 332 537.8L332 537.8Q330.3 536.3 327.7 535.3L327.7 535.3Q325 534.3 322.5 534.3ZM306.3 507L268.7 507L227.4 622.2Q224.3 630.7 223.2 631.7L222 632.7L333.7 631.7Q342.7 631.7 346.2 634.2L346.2 634.2Q349.7 636.7 350.8 639.3L350.8 639.3Q352 642 352.3 646.8L352.3 646.8Q352.7 651.7 352.4 660.7L351.7 689.7L348.3 690.3L347.7 688.5Q347 686.7 347 677.7L347 656L210.3 657L214.7 657.7L203 690.3L203.8 691.2Q204.7 692 213.7 692L326.7 691.4Q335.7 691.3 337 690.7L337 690.7Q338.3 690 339.3 690.5L339.3 690.5Q340.3 691 349.3 690.9L382.3 690.7L382.5 688.8Q382.7 687 379.6 678.5L340 570.3L296 569.2Q287 569 281.8 566.5L281.8 566.5Q276.7 564 274.7 561.8L274.7 561.8Q272.7 559.7 271.3 557L271.3 557Q270 554.3 269.5 550.7L269.5 550.7Q269 547 269.7 543.5L269.7 543.5Q270.3 540 272 537.2L272 537.2Q273.7 534.3 276.3 532L276.3 532Q279 529.7 283 528.2L283 528.2Q287 526.7 296 526.8L323.3 527.3L323.5 526.2Q323.7 525 320.5 516.6L320.5 516.4Q317.3 508 316.3 507.5L316.3 507.5Q315.3 507 306.3 507Z"/><path fill="#A8E7A1" fill-rule="evenodd" d="M713.8 1234.2L713.8 1234.2Q709.7 1234 709.2 1234.3L709.2 1234.3Q708.7 1234.7 708.3 1235.3L708.3 1235.3Q708 1236 708 1237.2L708 1237.2Q708 1238.3 707.8 1238.5L707.8 1238.5Q707.7 1238.7 707.7 1240.2L707.7 1240.2Q707.7 1241.7 707.8 1241.8L707.8 1241.8Q708 1242 708.2 1243.7L708.2 1243.7Q708.3 1245.3 709 1246.5L709 1246.5Q709.7 1247.7 710.5 1248.3L710.5 1248.3Q711.3 1249 712.5 1249.3L712.5 1249.3Q713.7 1249.7 715.3 1249.3L715.3 1249.3Q717 1249 718.2 1247.8L718.2 1247.8Q719.3 1246.7 720 1245L720 1245Q720.7 1243.3 720.5 1239.8L720.5 1239.8Q720.3 1236.3 720 1235.7L720 1235.7Q719.7 1235 718.8 1234.7L718.8 1234.7Q718 1234.3 713.8 1234.2ZM693.7 1234L693.7 1234Q689.3 1234 688.3 1235L688.3 1235Q687.3 1236 687.3 1236.8L687.3 1236.8Q687.3 1237.7 687.2 1237.8L687.2 1237.8Q687 1238 687.2 1241.3L687.2 1241.3Q687.3 1244.7 688.2 1246.2L688.2 1246.2Q689 1247.7 689.7 1248.2L689.7 1248.2Q690.3 1248.7 691.2 1249L691.2 1249Q692 1249.3 693.8 1249.2L693.8 1249.2Q695.7 1249 696.8 1248.2L696.8 1248.2Q698 1247.3 698.7 1246L698.7 1246Q699.3 1244.7 699.7 1243L699.7 1243Q700 1241.3 700 1239.8L700 1239.8Q700 1238.3 699.7 1236.7L699.7 1236.7Q699.3 1235 698.7 1234.5L698.7 1234.5Q698 1234 693.7 1234ZM716.3 1199.8L716.3 1199.8Q713.3 1200 711.2 1201.7L711.2 1201.7Q709 1203.3 708 1205.3L708 1205.3Q707 1207.3 706.5 1212L706.5 1212Q706 1216.7 706.5 1222.5L706.5 1222.5Q707 1228.3 707.5 1229.5L707.5 1229.5Q708 1230.7 708.5 1231L708.5 1231Q709 1231.3 715.2 1231.8L721.3 1232.3L722.8 1229.8Q724.3 1227.3 725.5 1223.8L725.5 1223.8Q726.7 1220.3 727 1217.8L727 1217.8Q727.3 1215.3 727.2 1212L727.2 1212Q727 1208.7 725.8 1206L725.8 1206Q724.7 1203.3 723 1201.8L723 1201.8Q721.3 1200.3 720.3 1200L720.3 1200Q719.3 1199.7 716.3 1199.8ZM690.5 1199.5L690.5 1199.5Q688 1199.7 685.8 1201.3L685.8 1201.3Q683.7 1203 682.5 1205.7L682.5 1205.7Q681.3 1208.3 681.2 1212.7L681.2 1212.7Q681 1217 682 1221.2L682 1221.2Q683 1225.3 684.2 1228L684.2 1228Q685.3 1230.7 686 1231.3L686 1231.3Q686.7 1232 693 1231.5L693 1231.5Q699.3 1231 700 1230L700 1230Q700.7 1229 701.2 1226.3L701.2 1226.3Q701.7 1223.7 701.8 1217.3L701.8 1217.3Q702 1211 701.7 1209L701.7 1209Q701.3 1207 700.7 1205.5L700.7 1205.5Q700 1204 698.7 1202.5L698.7 1202.5Q697.3 1201 695.2 1200.2L695.2 1200.2Q693 1199.3 690.5 1199.5ZM746.7 1087L650.3 1087L651 1276.3L755.7 1275.7L755.7 1087ZM690.3 1187.2L690.3 1187.2Q697 1184.7 703.7 1184.7L703.7 1184.7Q710.3 1184.7 714.7 1186L714.7 1186Q719 1187.3 722.3 1189.2L722.3 1189.2Q725.7 1191 729.8 1194.8L729.8 1194.8Q734 1198.7 735.5 1200.8L735.5 1200.8Q737 1203 739.5 1209.5L739.5 1209.5Q742 1216 741.8 1223.7L741.8 1223.7Q741.7 1231.3 738.8 1238L738.8 1238Q736 1244.7 733.2 1248L733.2 1248Q730.3 1251.3 727 1253.8L727 1253.8Q723.7 1256.3 717.2 1258.8L717.2 1258.8Q710.7 1261.3 703.7 1261.3L703.7 1261.3Q696.7 1261.3 692.3 1260L692.3 1260Q688 1258.7 684.5 1256.7L684.5 1256.7Q681 1254.7 676.3 1250L676.3 1250Q671.7 1245.3 669.7 1241.7L669.7 1241.7Q667.7 1238 666.5 1234.2L666.5 1234.2Q665.3 1230.3 665 1225.3L665 1225.3Q664.7 1220.3 665.2 1217.2L665.2 1217.2Q665.7 1214 668.8 1207.2L668.8 1207.2Q672 1200.3 674.5 1197.5L674.5 1197.5Q677 1194.7 680.3 1192.2L680.3 1192.2Q683.7 1189.7 690.3 1187.2ZM523.1 1058.3L522 1025L497.5 1041.3Q490 1046.3 489.5 1050.7L489.5 1050.7Q489 1055 489.1 1064L489.3 1085L479.3 1084.3L479 1053.7L445.8 1076Q438.3 1081 434.8 1084L434.8 1084Q431.3 1087 429.3 1087.5L427.3 1088L428.8 1087.5Q430.3 1087 439.3 1087L497.3 1087.3L499 1092L498.3 1087.3Q497.7 1082.7 498.2 1082.2L498.2 1082.2Q498.7 1081.7 507.7 1081.8L518.3 1082L518.7 1076.3Q519 1070.7 519.7 1069.7L519.7 1069.7Q520.3 1068.7 521.8 1068L523.3 1067.3ZM560.6 1040.3L560.3 999.3L531.7 1018.7L531.3 1067.7L546.3 1067L546.7 1059.2Q547 1051.3 548 1050.7L548 1050.7Q549 1050 554.8 1049.7L560.7 1049.3ZM424.5 994L423 992.3L425.3 995.7Q427.7 999 428.5 1000.8L428.5 1000.8Q429.3 1002.7 429.5 1004L429.5 1004Q429.7 1005.3 430 1006L430 1006Q430.3 1006.7 430.5 1010.7L430.5 1010.7Q430.7 1014.7 430 1017.7L429.3 1020.7L429.8 1019.7Q430.3 1018.7 430.7 1017L430.7 1017Q431 1015.3 430.8 1010.7L430.8 1010.7Q430.7 1006 429.7 1003L429.7 1003Q428.7 1000 427.3 997.8L427.3 997.8Q426 995.7 424.5 994ZM402.7 985.3L402.7 985.3Q396 985.7 394.5 986.5L393 987.3L395 987.7L394 1002.3L387.7 1002.2Q381.3 1002 380.5 1002.5L379.7 1003L379.7 1001L377.7 1009.3L379.3 1003.7L379.7 1011.5Q380 1019.3 380.7 1019.8L380.7 1019.8Q381.3 1020.3 388 1020.5L394.7 1020.7L395 1035.7L403.3 1035.7Q411.7 1035.7 412.2 1035.2L412.2 1035.2Q412.7 1034.7 413 1027.8L413.3 1021L420.3 1020.7Q427.3 1020.3 427.7 1019.8L427.7 1019.8Q428 1019.3 427.8 1011.3L427.7 1003.3L413 1002L413 996.5Q413 991 412.5 989.2L412 987.3L396.7 986.7L399.3 985.8Q402 985 407.7 985.7L413.3 986.3L411.3 985.7Q409.3 985 402.7 985.3ZM410.8 1000.7L411 998L411.7 997.7L412 998Q412.3 998.3 412.3 1000.2L412.3 1002L412.8 1002.3Q413.3 1002.7 419.7 1002.7L419.7 1002.7Q426 1002.7 426.7 1003L427.3 1003.3L427.5 1011.3Q427.7 1019.3 427.3 1019.7L427.3 1019.7Q427 1020 420.3 1020L420.3 1020Q413.7 1020 413.2 1020.5L413.2 1020.5Q412.7 1021 412.7 1022.5L412.7 1022.5Q412.7 1024 412.3 1024.3L412 1024.7L411 1024L411 1021.8Q411 1019.7 411.5 1019L411.5 1019Q412 1018.3 418.7 1018.3L425.3 1018.3L425.7 1017.8Q426 1017.3 425.8 1011.2L425.7 1005L418.7 1004.7Q411.7 1004.3 411.2 1003.8L411.2 1003.8Q410.7 1003.3 410.8 1000.7ZM395.2 994.8L395.7 987.7L403.5 987.7Q411.3 987.7 411.8 988.2L411.8 988.2Q412.3 988.7 412.3 991.3L412.3 994L410.7 994L410 989.3L397 989.3L396.3 1003.3L395.5 1003.8Q394.7 1004.3 388.3 1004.5L382 1004.7L382.3 1017.3L396.7 1018.7L397 1033.3L410 1033.3L410.7 1028L412 1027.7L412.2 1031Q412.3 1034.3 411.8 1034.8L411.8 1034.8Q411.3 1035.3 403.3 1035.3L395.3 1035.3L394.7 1020.3L388 1020.2Q381.3 1020 380.8 1019.5L380.8 1019.5Q380.3 1019 380.3 1011.2L380.3 1011.2Q380.3 1003.3 381 1002.8L381 1002.8Q381.7 1002.3 388.2 1002.2L394.7 1002ZM597.7 1018.3L597.7 974.7L569.7 993.3L569 1014Q568.7 1023 568.9 1032L569.3 1049.7L573.7 1049.3L574 1041.5Q574.3 1033.7 573.5 1032L572.7 1030.3L573.7 1029.2Q574.7 1028 583.7 1028.1L587.7 1028.2Q596.7 1028.3 597.2 1027.8L597.2 1027.8Q597.7 1027.3 597.7 1018.3ZM635.9 962.3L635.7 949L607 968.3L606.3 999.7L633.3 999L632.7 973.3L636 971.3ZM232.7 942L232.7 940L231.7 940.5Q230.7 941 221.7 941L201 941Q192 941 191 940.7L190 940.3L190 942.2Q190 944 190.3 944.3L190.3 944.3Q190.7 944.7 199.7 944.7L223 944.7Q232 944.7 232.3 944.3L232.3 944.3Q232.7 944 232.7 942ZM664.7 944L664.7 930.3L646 942.3L645 971.7L665.7 971.3L665.2 962Q664.7 953 664.7 944ZM232.7 933.2L232.7 930L231.7 930.7Q230.7 931.3 221.7 931.3L203.7 931.3Q194.7 931.3 192.7 931.2L192.7 931.2Q190.7 931 190.3 930.7L190 930.3L189.7 936.7L190.2 936.3Q190.7 936 199.7 935.9L220 935.7Q229 935.7 230.8 936L232.7 936.3ZM350.2 935.3L350.2 935.3Q346.3 941.7 346.3 942.2L346.3 942.7L347.3 942.7Q348.3 942.7 348.5 942.5L348.7 942.3L349.2 942.5Q349.7 942.7 350.7 942.7L350.7 942.7Q351.7 942.7 351.8 942.5L351.8 942.5Q352 942.3 358 942.3L358 942.3Q364 942.3 364.2 942.5L364.2 942.5Q364.3 942.7 365.3 942.5L365.3 942.5Q366.3 942.3 366.5 942.5L366.5 942.5Q366.7 942.7 367.5 942.7L367.5 942.7Q368.3 942.7 369.2 942.3L370 942L368.8 940Q367.7 938 362.5 931.8L362.5 931.8Q357.3 925.7 357 925.7L357 925.7Q356.7 925.7 355.3 927.3L355.3 927.3Q354 929 350.2 935.3ZM193.7 925.2L190 925.3L190 926.7L190.5 926.3Q191 926 200 926.1L232.3 926.3L232.3 925L231.8 924.7Q231.3 924.3 222.3 924.2L210 924.1Q201 924 199.2 924.5L199.2 924.5Q197.3 925 193.7 925.2ZM236.1 937.3L235.9 930.3Q235.7 921.3 235.2 921L235.2 921Q234.7 920.7 225.7 920.9L196.7 921.5Q187.7 921.7 187.3 922L187.3 922Q187 922.3 187.2 931.3L187.4 938.3Q187.7 947.3 188 947.7L188 947.7Q188.3 948 197.3 947.8L226.7 947.2Q235.7 947 236 946.7L236 946.7Q236.3 946.3 236.1 937.3ZM232.5 921.5L235 922L235.3 925.7Q235.7 929.3 235.7 937.7L235.7 937.7Q235.7 946 235.3 946.3L235.3 946.3Q235 946.7 226 946.9L198 947.5Q189 947.7 188.5 947.2L188.5 947.2Q188 946.7 187.9 937.7L187.8 931.7Q187.7 922.7 188 922.3L188 922.3Q188.3 922 197.3 921.8L221 921.2Q230 921 232.5 921.5ZM270 921.1L308 920.3L261 921L260.7 921.5Q260.3 922 260.6 931L261 946.3L261 921.3ZM344 920.1L382.3 919.3L335 920L335 946L382.7 945.3L335.3 946L335 920.3ZM665.3 891L667.3 890.7L527.3 891Q518.3 891 517 890.3L515.7 889.7L515 891L482.3 891L480.7 886L481 890L478.3 890.7L477.7 890Q477 889.3 476.7 887.5L476.3 885.7L476.3 891L435.7 891L435.7 886L434.7 890L431.3 891L431 889.7Q430.7 888.3 431.2 887L431.7 885.7L431.2 887.7Q430.7 889.7 429.8 890.3L429.8 890.3Q429 891 423.8 891L418.7 891L418 885.7L417.3 891L413.2 891Q409 891 407.8 890.3L406.7 889.7L406.7 885.7L406 891L274.7 891L274 886L273.3 891L265.7 891L264.7 886L264 891L256 891Q248 891 247.2 890.5L247.2 890.5Q246.3 890 246.2 888.2L246 886.3L246.2 887.8Q246.3 889.3 245.8 890.2L245.3 891L243 890.3L242 887.3L242 890.7L199.3 890.7L199.7 887.3L199 891L197.5 891.3Q196 891.7 195.3 891.2L194.7 890.7L195.7 887L194.3 890.7L159 890.7Q150 890.7 149.3 891.3L148.7 892L147.7 890L145.7 890.5Q143.7 891 140.5 890.8L140.5 890.8Q137.3 890.7 136.7 890L136.7 890Q136 889.3 136 887.8L136 886.3L136.7 1093.7L137.7 1088.7L146.2 1088.2Q154.7 1087.7 163.7 1087.5L202.3 1087L203.3 1088.7L288.3 1088.7L289.3 1086.7L402 1087Q411 1087 411.8 1087.5L411.8 1087.5Q412.7 1088 415.7 1088L418.7 1088L413 1088L412.7 1087L655.5 924.7Q663 919.7 663.5 919.8L664 920L664 924.7L664 922.7Q664 920.7 664.8 919L665.7 917.3L665.2 917Q664.7 916.7 664.2 907.7L663.3 891.3ZM395 981L395 981Q400.7 979.3 406.7 980L406.7 980Q412.7 980.7 417.5 983.2L417.5 983.2Q422.3 985.7 426.7 990.8L426.7 990.8Q431 996 433 1002.3L433 1002.3Q435 1008.7 434.7 1016.7L434.7 1016.7Q434.3 1024.7 431.6 1033.2L430.4 1037.1Q427.7 1045.7 423.5 1053.6L420.5 1059.4Q416.3 1067.3 410.8 1074.4L404 1083L402.3 1082Q400.7 1081 396.7 1075.8L396.7 1075.8Q392.7 1070.7 388.2 1062.9L388.1 1062.8Q383.7 1055 380.2 1046.7L379.2 1044.3Q375.7 1036 373.8 1027.2L373.6 1026.1Q371.7 1017.3 372.2 1010.8L372.2 1010.8Q372.7 1004.3 375.7 998L375.7 998Q378.7 991.7 380.8 989.3L380.8 989.3Q383 987 386.2 984.8L386.2 984.8Q389.3 982.7 395 981ZM238.5 917.7L238.5 917.7Q239.3 918.3 239.6 927.3L240 940Q240.3 949 239.7 949.8L239.7 949.8Q239 950.7 230 950.9L194.7 951.8Q185.7 952 184.7 951.3L183.7 950.7L183.2 928.7Q183 919.7 183.7 918.8L183.7 918.8Q184.3 918 193.3 917.8L228.7 917.2Q237.7 917 238.5 917.7ZM311.5 916.8L311.5 916.8Q312.7 917.7 313 926.7L313.4 939Q313.7 948 313 948.8L313 948.8Q312.3 949.7 303.3 950L270.7 951Q261.7 951.3 259.3 950.7L257 950L256.5 927.7Q256.3 918.7 256.8 918L256.8 918Q257.3 917.3 266.3 917.1L301.3 916.2Q310.3 916 311.5 916.8ZM385.8 916L385.8 916Q386.7 916.7 387 925.7L387.4 938.3Q387.7 947.3 387 948.2L387 948.2Q386.3 949 377.3 949.3L343.7 950.4Q334.7 950.7 332.8 949.8L331 949L330.5 927Q330.3 918 331 917.2L331 917.2Q331.7 916.3 340.7 916.2L376 915.5Q385 915.3 385.8 916ZM422.8 572.7L422.3 542L422.2 550.8Q422 559.7 422.4 568.7L423 581.7ZM552.8 549.3L552.7 541L552.9 566.7Q553 575.7 553.2 576.5L553.3 577.3L553.3 575.2Q553.3 573 553.2 572.8L553.2 572.8Q553 572.7 553.2 565.3L553.2 565.3Q553.3 558 553.2 557.8L553.2 557.8Q553 557.7 552.8 549.3ZM475.1 567L474.3 541L460.7 540.6Q451.7 540.3 442.7 540.8L426.7 541.7L427 581L432.8 581.3Q438.7 581.7 447.7 581.3L474.3 580.3L474.8 578.2Q475.3 576 475.1 567ZM548.3 570L548.3 539.7L542.3 539L542 539.7L546 539.7L547 541.3L513.3 571.9Q506.7 578 504.5 578.8L502.3 579.7L501 576.7L501 579.7L502.5 580.2Q504 580.7 513 580.3L548.3 579ZM353.7 534.2L353.7 534.2Q350.7 534.3 348.7 535.3L348.7 535.3Q346.7 536.3 345.7 537.2L345.7 537.2Q344.7 538 343.3 539.8L343.3 539.8Q342 541.7 341.3 543.7L341.3 543.7Q340.7 545.7 340.8 548.7L340.8 548.7Q341 551.7 342.2 554L342.2 554Q343.3 556.3 345.3 558.2L345.3 558.2Q347.3 560 349.5 560.8L349.5 560.8Q351.7 561.7 354.7 561.7L354.7 561.7Q357.7 561.7 359.2 561.2L359.2 561.2Q360.7 560.7 362 559.8L362 559.8Q363.3 559 365 557.2L365 557.2Q366.7 555.3 367.7 552.3L367.7 552.3Q368.7 549.3 368.5 546.8L368.5 546.8Q368.3 544.3 366.7 541.3L366.7 541.3Q365 538.3 363 536.8L363 536.8Q361 535.3 358.8 534.7L358.8 534.7Q356.7 534 353.7 534.2ZM691.3 528L691.3 528Q686.3 528 681.5 530L681.5 530Q676.7 532 673.3 535.2L673.3 535.2Q670 538.3 667.7 543.3L667.7 543.3Q665.3 548.3 665.2 553.5L665.2 553.5Q665 558.7 667.3 564.2L667.3 564.2Q669.7 569.7 672.8 572.8L672.8 572.8Q676 576 680 578L680 578Q684 580 689.8 580.3L689.8 580.3Q695.7 580.7 700.7 578.8L700.7 578.8Q705.7 577 709.7 573.2L709.7 573.2Q713.7 569.3 715.7 564.7L715.7 564.7Q717.7 560 717.7 554.5L717.7 554.5Q717.7 549 715.7 544.2L715.7 544.2Q713.7 539.3 710.7 536.2L710.7 536.2Q707.7 533 704.8 531.3L704.8 531.3Q702 529.7 699.2 528.8L699.2 528.8Q696.3 528 691.3 528ZM680 562.3L680 562.3Q680 561.7 680.5 561.2L680.5 561.2Q681 560.7 681.5 560.5L681.5 560.5Q682 560.3 682.8 560.7L682.8 560.7Q683.7 561 685.5 562.3L685.5 562.3Q687.3 563.7 689.8 563.8L689.8 563.8Q692.3 564 692.5 563.8L692.5 563.8Q692.7 563.7 693.5 563.7L693.5 563.7Q694.3 563.7 696.7 562.2L696.7 562.2Q699 560.7 699.8 560.7L699.8 560.7Q700.7 560.7 701.3 561.2L701.3 561.2Q702 561.7 702 562.7L702 562.7Q702 563.7 701.2 564.7L701.2 564.7Q700.3 565.7 699.2 566.3L699.2 566.3Q698 567 695.3 567.8L695.3 567.8Q692.7 568.7 691.2 568.7L691.2 568.7Q689.7 568.7 688.8 568.3L688.8 568.3Q688 568 687.3 568L687.3 568Q686.7 568 685 567.3L685 567.3Q683.3 566.7 682 565.5L682 565.5Q680.7 564.3 680.3 563.7L680.3 563.7Q680 563 680 562.3ZM699.3 546.8L699.3 546.8Q700.3 546 701.3 546L701.3 546Q702.3 546 703.3 547L703.3 547Q704.3 548 704.2 549.5L704.2 549.5Q704 551 702.8 551.8L702.8 551.8Q701.7 552.7 701.2 552.7L701.2 552.7Q700.7 552.7 700 552.3L700 552.3Q699.3 552 698.7 551.2L698.7 551.2Q698 550.3 698.2 549L698.2 549Q698.3 547.7 699.3 546.8ZM679.5 546.3L679.5 546.3Q680.7 545.7 681.7 546L681.7 546Q682.7 546.3 683.5 547.5L683.5 547.5Q684.3 548.7 684 549.8L684 549.8Q683.7 551 682.5 551.8L682.5 551.8Q681.3 552.7 680.5 552.5L680.5 552.5Q679.7 552.3 678.7 551.2L678.7 551.2Q677.7 550 677.7 549L677.7 549Q677.7 548 678 547.5L678 547.5Q678.3 547 679.5 546.3ZM684.7 530.7L684.7 530.7Q689.3 529.3 692.8 530L696.3 530.7L689.7 531.3Q683 532 680.7 533.2L680.7 533.2Q678.3 534.3 675.5 537L675.5 537Q672.7 539.7 670.5 544L670.5 544Q668.3 548.3 668.2 553.2L668.2 553.2Q668 558 670.3 563.2L670.3 563.2Q672.7 568.3 677.2 572L677.2 572Q681.7 575.7 684.2 576.5L684.2 576.5Q686.7 577.3 690 577.5L690 577.5Q693.3 577.7 698.5 575.8L698.5 575.8Q703.7 574 707.2 570.7L707.2 570.7Q710.7 567.3 712.3 563.8L712.3 563.8Q714 560.3 714.3 558.2L714.3 558.2Q714.7 556 714.2 551.5L714.2 551.5Q713.7 547 711.7 543.2L711.7 543.2Q709.7 539.3 707.2 537L707.2 537Q704.7 534.7 700.7 532.7L696.7 530.7L698.3 530.8Q700 531 702.8 532.5L702.8 532.5Q705.7 534 708 536.2L708 536.2Q710.3 538.3 712.2 541.5L712.2 541.5Q714 544.7 714.8 548.3L714.8 548.3Q715.7 552 715.3 556.2L715.3 556.2Q715 560.3 713.7 563.7L713.7 563.7Q712.3 567 709.8 570L709.8 570Q707.3 573 704.5 574.8L704.5 574.8Q701.7 576.7 698.3 577.7L698.3 577.7Q695 578.7 690.5 578.5L690.5 578.5Q686 578.3 681.2 576.2L681.2 576.2Q676.3 574 673.2 570.7L673.2 570.7Q670 567.3 668.2 562.5L668.2 562.5Q666.3 557.7 666.7 552.7L666.7 552.7Q667 547.7 669 543.5L669 543.5Q671 539.3 675.5 535.7L675.5 535.7Q680 532 684.7 530.7Z"/><path fill="#E06A6A" fill-rule="evenodd" d="M289.7 534.2L289.7 534.2Q286.7 534.3 284.7 535.3L284.7 535.3Q282.7 536.3 280.5 538.7L280.5 538.7Q278.3 541 277.5 543.5L277.5 543.5Q276.7 546 276.8 549L276.8 549Q277 552 278 554L278 554Q279 556 281.2 558L281.2 558Q283.3 560 285.5 560.8L285.5 560.8Q287.7 561.7 290.7 561.7L290.7 561.7Q293.7 561.7 296 560.7L296 560.7Q298.3 559.7 300.3 557.7L300.3 557.7Q302.3 555.7 303.5 552.7L303.5 552.7Q304.7 549.7 304.3 546.7L304.3 546.7Q304 543.7 302.8 541.5L302.8 541.5Q301.7 539.3 299.8 537.7L299.8 537.7Q298 536 295.3 535L295.3 535Q292.7 534 289.7 534.2Z"/>
+              <g transform="translate(503,711)">
+                <path d="M38 74 6 40A19 19 0 0 1 38 14 19 19 0 0 1 70 40Z" fill="#141A3C"/>
+                <path d="M41 17A16.5 16.5 0 0 1 67 40L57 51 33 28Z" fill="#A8E7A1"/>
+                <g transform="rotate(45 25 57)" stroke="#141A3C" stroke-width="2.5"><rect x="6" y="49" width="38" height="16" rx="8" fill="#A8E7A1"/><path d="M19 49V65M31 49V65" fill="none"/></g>
+              </g>
+              <rect x="208" y="1088" width="76" height="17" fill="#141A3C"/>
+              <rect x="208" y="1092" width="76" height="3" fill="#A8E7A1"/><rect x="208" y="1098" width="76" height="3" fill="#A8E7A1"/>
+              <path d="M210 1105H282V1117A36 34 0 0 1 210 1117Z" fill="#141A3C"/>
+              <circle cx="246" cy="1127" r="10.5" fill="#FFFFFF"/><circle cx="246" cy="1127" r="6.5" fill="#141A3C"/>
+              <path d="M246 1127V1122.5M246 1127H250" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+            </g>
+
+            <g class="room" id="room-sos" data-go="sos" tabindex="0" role="button" aria-label="응급 상황 신고 열기"><title>신고</title>
+              <circle class="off o1" cx="290.5" cy="547.5" r="14.5"/><circle class="off o2" cx="323" cy="547.5" r="14.5"/><circle class="off o3" cx="354" cy="547.5" r="14.5"/>
+              <circle class="glow g1" cx="290.5" cy="547.5" r="15" stroke="#E06A6A"/><circle class="glow g2" cx="323" cy="547.5" r="15" stroke="#F5DF72"/><circle class="glow g3" cx="354" cy="547.5" r="15" stroke="#A8E7A1"/>
+              <rect class="hit" x="135" y="507" width="260" height="186"/>
+            </g>
+
+            <g class="room dark" id="room-mind" data-go="mind" tabindex="0" role="button" aria-label="마음 건강 챙기기 열기"><title>마음</title>
+              <rect class="off" x="394" y="504" width="364" height="190" fill="#141A3C"/>
+              <rect class="hit" x="395" y="507" width="361" height="186"/>
+            </g>
+
+            <g class="room" id="room-community" data-go="community" tabindex="0" role="button" aria-label="커뮤니티 열기"><title>모임</title>
+              <path class="cone" fill="#FFFFFF" fill-rule="evenodd" d="M509.5 882.7L471.7 842L471.5 843.3Q471.3 844.7 473.4 853.4L482 890.3L515 890.7L515.7 889.3ZM456.8 837.3L448 837L438.3 874.6Q436 883.3 435.7 886.8L435.3 890.3L476.3 890.7L476 886.3Q475.7 882 473.7 873.2L465.7 837.7ZM220.3 835.2L211.7 835L199.3 890.3L242 890.3L241.3 885.8Q240.7 881.3 238.5 872.6L229 835.3ZM196.3 881.5L206.7 835L204.8 835.3Q203 835.7 196.7 842.1L175.6 863.6Q169.3 870 162.7 876L148 889.3L148.3 891.3L149.2 890.8Q150 890.3 159 890.3L194.3 890.3ZM406.1 881.7L406.7 820.3L377 820.1Q368 820 359 820.2L274.3 822L274.3 890.3L406 890.7ZM459.3 832.2L462 831.7L370.7 734L306.3 735L210.3 829.3L211.5 829.8Q212.7 830.3 221.7 830.3L233.7 830.3Q242.7 830.3 243.7 831.2L243.7 831.2Q244.7 832 244.8 832.8L245 833.7L244.3 834.3Q243.7 835 238.3 835.3L233 835.7L244.5 881.3Q246.7 890 247.3 890.3L247.3 890.3Q248 890.7 256.2 890.5L264.3 890.3L264.7 822.3L243 822L242.7 810.3L243.5 809.8Q244.3 809.3 253.3 809.4L298 809.6Q307 809.7 316 809.5L437.3 807.7L438.2 809.5Q439 811.3 438.5 814.7L438.5 814.7Q438 818 437.3 819L436.7 820L418 820.3L418.7 890.7L423.8 890.7Q429 890.7 429.7 890.2L429.7 890.2Q430.3 889.7 432.6 880.9L443.7 837.7L438.3 837.3Q433 837 432.3 836.3L431.7 835.7L433.3 832.7L447.7 832.7Q456.7 832.7 459.3 832.2Z"/>
+              <g class="ppl" fill="#141A3C">
+                <circle cx="224" cy="768" r="17"/><rect x="207" y="786" width="34" height="50" rx="13"/><rect x="216" y="820" width="48" height="17" rx="8"/><rect x="249" y="826" width="14" height="62" rx="6"/>
+                <circle cx="456" cy="768" r="17"/><rect x="439" y="786" width="34" height="50" rx="13"/><rect x="416" y="820" width="48" height="17" rx="8"/><rect x="417" y="826" width="14" height="62" rx="6"/>
+              </g>
+              <rect class="hit" x="135" y="693" width="621" height="197"/>
+            </g>
+
+            <g class="room" id="room-medical" data-go="medical" tabindex="0" role="button" aria-label="의료 서비스 지도 열기"><title>의료</title>
+              <path class="ecg" d="M160 1040H236l12-30 17 56 15-42 10 16H352" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" pathLength="100"/>
+              <circle class="pulse p1" cx="403" cy="1010" r="36" fill="none" stroke="#FFFFFF" stroke-width="6"/>
+              <circle class="pulse p2" cx="403" cy="1010" r="36" fill="none" stroke="#FFFFFF" stroke-width="6"/>
+              <rect class="hit" x="135" y="890" width="621" height="198"/>
+            </g>
+
+            <g class="room" id="room-cctv" data-go="cctv" tabindex="0" role="button" aria-label="CCTV 연동 열기"><title>CCTV</title>
+              <circle class="lens" cx="246" cy="1127" r="6.5" fill="#F0525B"/>
+              <rect class="hit" x="135" y="1088" width="365" height="190"/>
+            </g>
+
+            <g class="room" id="room-walk" data-go="walk" tabindex="0" role="button" aria-label="걷기 미션 열기"><title>걷기</title>
+              <rect x="530" y="1115" width="90" height="161" fill="#FFF9E0"/>
+              <g class="door">
+                <rect x="530" y="1115" width="90" height="161" fill="#F5DF72"/>
+                <rect x="546" y="1132" width="57" height="59" fill="#FFFFFF" stroke="#141A3C" stroke-width="2.5"/>
+                <path d="M574.5 1132V1191M546 1146H603" fill="none" stroke="#141A3C" stroke-width="2.5"/>
+                <path d="M546 1276V1207H603V1276" fill="none" stroke="#141A3C" stroke-width="2"/>
+              </g>
+              <rect class="hit" x="500" y="1088" width="256" height="190"/>
+            </g>
+
+            <g class="radar" aria-hidden="true" fill="none" stroke="#2FBF71" stroke-width="3">
+              <g class="sweep"><circle cx="246" cy="1127" r="520" stroke="none"/><path d="M246 1127 246 607A520 520 0 0 1 613.7 759.3Z" fill="#2FBF71" fill-opacity=".28" stroke="none"/></g>
+              <circle class="ring" cx="246" cy="1127" r="560" vector-effect="non-scaling-stroke"/>
+              <circle class="ring r2" cx="246" cy="1127" r="560" vector-effect="non-scaling-stroke"/>
+              <circle class="ring r3" cx="246" cy="1127" r="560" vector-effect="non-scaling-stroke"/>
+              <g class="blip b1"><circle cx="62" cy="1000" r="20" stroke-width="4"/><circle cx="62" cy="1000" r="9" fill="#FFFFFF" stroke="none"/></g>
+              <g class="blip b2"><circle cx="70" cy="640" r="20" stroke-width="4"/><circle cx="70" cy="640" r="9" fill="#FFFFFF" stroke="none"/></g>
+              <g class="blip b3"><circle cx="612" cy="410" r="20" stroke-width="4"/><circle cx="612" cy="410" r="9" fill="#FFFFFF" stroke="none"/></g>
+            </g>
+          </g>
+        </svg>
+        <button type="button" class="ask" id="askBar"><svg aria-hidden="true"><use href="#i-butler"/></svg><span>공집사에게 물어보세요</span></button>
+      </section>
+
+      <!-- CCTV -->
+      <section class="pane" id="pane-cctv" hidden>
+        <div class="ph"><div class="who">User327님,</div><h2><em>공집사를</em><br>찾으셨나요?</h2></div>
+        <div class="cam">
+          <div class="cam-bar">공집사가 집 밖을 실시간으로 보고 있어요.</div>
+          <div class="cam-view" id="camView">
+            <svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" aria-label="현관 앞 복도 시연 화면" role="img">
+              <rect width="320" height="180" fill="#101713"/>
+              <polygon points="0,180 320,180 215,92 105,92" fill="#39443C"/>
+              <polygon points="0,0 105,22 105,92 0,180" fill="#1D2620"/>
+              <polygon points="320,0 215,22 215,92 320,180" fill="#252F28"/>
+              <polygon points="0,0 320,0 215,22 105,22" fill="#161D18"/>
+              <rect x="105" y="22" width="110" height="70" fill="#2B362E"/>
+              <rect x="138" y="34" width="44" height="58" fill="#151C17" stroke="#56655A" stroke-width="2"/>
+              <circle cx="175" cy="65" r="2" fill="#9FB3A2"/>
+              <polygon points="20,150 78,104 78,40 20,26" fill="#56655A" opacity=".55"/>
+              <rect x="150" y="6" width="20" height="5" fill="#CFE6D1"/>
+              <polygon points="150,11 170,11 205,92 115,92" fill="#CFE6D1" opacity=".08"/>
+              <g stroke="#4B584E" stroke-width="1"><path d="M60 180 127 92M130 180 150 92M190 180 170 92M260 180 193 92"/></g>
+            </svg>
+            <div class="scan"></div>
+            <span class="ov tl rec" id="camName">CAM 01 · 현관 앞</span>
+            <span class="ov tr num" id="camClock">--:--:--</span>
+            <span class="ov bl">시연 화면</span>
+          </div>
+        </div>
+        <div class="chips" id="camChips" role="group" aria-label="카메라 선택">
+          <button type="button" aria-pressed="true" data-cam="CAM 01 · 현관 앞">현관 앞</button>
+          <button type="button" aria-pressed="false" data-cam="CAM 02 · 복도">복도</button>
+          <button type="button" aria-pressed="false" data-cam="CAM 03 · 건물 입구">건물 입구</button>
+        </div>
+        <button type="button" class="btn" id="camReport">신고하기</button>
+        <p class="demo">실제 CCTV는 아직 연결되어 있지 않아요. 연결되면 이 자리에서 현관 밖을 바로 볼 수 있고, 외부인이 다가오면 버튼 하나로 신고할 수 있어요.</p>
+        <div class="sub">
+          <div class="sub-h"><h3>주변 CCTV 위치</h3><span class="ex">예시 데이터</span></div>
+          <ul class="list">
+            <li class="row" style="justify-content:space-between"><span>골목 입구 방범 카메라</span><span class="num ex">40m</span></li>
+            <li class="row" style="justify-content:space-between"><span>어린이공원 앞 카메라</span><span class="num ex">120m</span></li>
+            <li class="row" style="justify-content:space-between"><span>편의점 사거리 카메라</span><span class="num ex">210m</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 신고 -->
+      <section class="pane" id="pane-sos" hidden>
+        <div class="ph"><div class="who">User327님,</div><h2><em>공집사를</em><br>찾으셨나요?</h2><p>급한 정도에 따라 신호등 색으로 나눴어요. 버튼만 누르면 해당 기관이 호출돼요.</p></div>
+        <p class="demo">프로토타입이라 실제 신고는 접수되지 않아요. 지금 위급하다면 119 또는 112로 직접 전화하세요.</p>
+        <div class="lights">
+          <button type="button" class="light" data-alert="r"><span class="lbl">119 긴급 호출하기<small>쓰러짐, 화재, 심한 통증</small></span><span class="lamp r">긴급<small>119</small></span></button>
+          <button type="button" class="light" data-alert="a"><span class="lbl">112 신고하기<small>침입, 수상한 사람, 위협</small></span><span class="lamp a">주의<small>112</small></span></button>
+          <button type="button" class="light" data-alert="g"><span class="lbl">공공 알림 확인하기<small>생활·복지 소식</small></span><span class="lamp g">알림</span></button>
+        </div>
+        <div class="notice" id="notice" tabindex="-1">
+          <div class="sub-h"><h3>생활·복지 알림</h3><span class="ex">예시 데이터</span></div>
+          <ul>
+            <li>청년 주거비 지원 (~10/15)</li>
+            <li>노인 건강검진 지원 (~8/31)</li>
+            <li>서울역사박물관(본관) 단체관람 신청</li>
+            <li>폭염 대비 무더위 쉼터 운영 안내</li>
+          </ul>
+          <p style="font-size:.875rem">더 궁금한 생활 민원은 120 다산콜로 문의할 수 있어요.</p>
+        </div>
+      </section>
+
+      <!-- 의료 -->
+      <section class="pane" id="pane-medical" hidden>
+       <div class="view" id="medList">
+        <div class="ph"><div class="who">User327님,</div><h2><em id="medCount">0곳</em>을<br>찾았어요</h2><p>진료받을 위치와 진료과를 고르면 지도와 목록이 바로 바뀌어요.</p></div>
+        <div class="filters">
+          <label>구<select id="fGu"><option>광진구</option></select></label>
+          <label>동<select id="fDong"><option value="">전체</option><option>능동</option><option>구의동</option><option>화양동</option></select></label>
+          <label>진료과<select id="fDept"><option value="">전체</option><option>정형외과</option><option>내과</option><option>가정의학과</option><option>이비인후과</option><option>정신건강의학과</option><option>약국</option></select></label>
+        </div>
+        <svg class="map" id="map" viewBox="0 0 320 190" role="img" aria-label="병원 위치 약도">
+          <rect width="320" height="190" fill="var(--sunk)"/>
+          <rect x="18" y="98" width="38" height="28" rx="3" fill="var(--tint)"/>
+          <g stroke="var(--surface)" stroke-linecap="round" fill="none">
+            <path d="M-10 38 330 72" stroke-width="9"/><path d="M62 -10 108 200" stroke-width="7"/>
+            <path d="M196 -10 252 200" stroke-width="14"/><path d="M-10 132 330 150" stroke-width="6"/>
+            <path d="M152 -10 140 200" stroke-width="3.5"/><path d="M-10 92 330 106" stroke-width="3.5"/><path d="M290 -10 280 200" stroke-width="3.5"/>
+          </g>
+          <g id="pins"></g>
+        </svg>
+        <div class="sub">
+          <div class="sub-h"><h3>병원 비교</h3><span class="ex">예시 데이터 · 실제 병원 정보가 아니에요</span></div>
+          <ul class="list" id="places"></ul>
+          <p class="empty" id="medEmpty" hidden>조건에 맞는 곳이 없어요. 동이나 진료과를 '전체'로 바꿔 보세요.</p>
+        </div>
+       </div>
+       <div class="view" id="medDetail" hidden>
+        <button type="button" class="back" id="hsBack">‹ 병원 목록으로</button>
+        <div class="ph"><div class="who">User327님,</div><h2 id="hsTitle"><em>예약</em>을<br>도와드릴게요</h2></div>
+        <div class="tags" id="hsChips"></div>
+        <div class="hcard">
+          <div class="sub-h"><h3 id="hsName"></h3><span class="star num" id="hsRate"></span></div>
+          <p class="meta" id="hsTags"></p>
+          <dl class="info" id="hsInfo"></dl>
+          <p class="ex" style="white-space:normal">예시 데이터예요. 실제 병원 정보가 아니에요.</p>
+        </div>
+        <div class="sub" id="hsForm">
+          <h3>날짜</h3>
+          <div class="chips" id="hsDates" role="group" aria-label="예약 날짜"></div>
+          <h3>시간</h3>
+          <div class="slots" id="hsSlots" role="group" aria-label="예약 시간"></div>
+          <label class="sr" for="hsMemo">증상 메모</label>
+          <input class="field" id="hsMemo" maxlength="60" placeholder="증상을 한 줄로 적어 주세요 (선택)">
+          <p class="err" id="hsErr" hidden></p>
+          <button type="button" class="btn" id="hsSubmit">예약 요청하기</button>
+        </div>
+        <div class="done" id="hsDone" hidden>
+          <strong>예약을 요청했어요</strong>
+          <p id="hsDoneWhen" style="font-weight:600"></p>
+          <p id="hsDoneMemo" style="font-size:.9rem"></p>
+          <p style="font-size:.875rem">시연이라 실제 병원에는 전달되지 않아요. 진료를 받고 리뷰를 쓰면 리워드를 드려요.</p>
+          <div class="row"><button type="button" class="btn sm quiet" id="hsCancel">예약 취소</button><button type="button" class="btn sm" id="hsToList">목록으로</button></div>
+        </div>
+        <p class="demo" id="hsWalkin" hidden>약국은 예약 없이 방문하면 돼요.</p>
+       </div>
+      </section>
+
+      <!-- 마음 -->
+      <section class="pane" id="pane-mind" hidden>
+        <div class="ph"><div class="who">User327님,</div><h2>오늘 <em>컨디션</em><br>어때요?</h2></div>
+        <div class="moods" id="moods" role="group" aria-label="오늘의 기분">
+          <button type="button" data-mood="좋음" aria-pressed="false"></button>
+          <button type="button" data-mood="보통" aria-pressed="false"></button>
+          <button type="button" data-mood="나쁨" aria-pressed="false"></button>
+        </div>
+        <div class="say">
+          <svg class="av" aria-hidden="true"><use href="#i-butler"/></svg>
+          <div class="tx"><span id="moodSay">좋은 하루예요. 오늘 기분을 하나 골라 주시면 기록해 둘게요.</span><button type="button" class="go-chip" id="moodTalk" hidden>공집사와 이야기하기</button></div>
+        </div>
+        <div class="sub">
+          <div class="sub-h"><h3>주간 스트레스</h3><span class="ex">예시 데이터 · 오늘 칸만 내 기록</span></div>
+          <div class="chart">
+            <p class="verdict" id="verdict" style="text-align:right;margin-bottom:.5rem"></p>
+            <div class="bars" id="bars"></div>
+            <div class="days"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="sub">
+            <h3>명상의 시간</h3>
+            <p class="ex" style="white-space:normal">지금 잠시, 마음을 쉬게 하세요.</p>
+            <div class="dial" id="dial"><span id="medTime">3:00</span></div>
+            <div class="row"><button type="button" class="btn sm" id="medToggle" style="flex:1">시작</button><button type="button" class="btn sm quiet" id="medReset">처음부터</button></div>
+          </div>
+          <div class="sub">
+            <h3>마음일기</h3>
+            <p class="ex" style="white-space:normal">오늘의 마음을 한 줄로 남겨요.</p>
+            <form class="row" id="diaryForm" style="flex-wrap:nowrap"><label class="sr" for="diaryIn">오늘의 한 줄</label><input class="field" id="diaryIn" maxlength="80" placeholder="예: 퇴근길 바람이 좋았다"><button class="btn sm" type="submit">남기기</button></form>
+            <div class="hearts" id="hearts" aria-label="이번 달 기록한 날"></div>
+            <ul class="list diary" id="diary"></ul>
+            <p class="empty" id="diaryEmpty">아직 기록이 없어요. 첫 줄을 남기면 달력에 하트가 하나 생겨요.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 커뮤니티 -->
+      <section class="pane" id="pane-community" hidden>
+        <div class="ph"><h2><em>공집사</em> 커뮤니티</h2><p>혼자라서 시작하기 어려운 일은 모임으로, 혼자 쓰기엔 많은 물건은 나눔으로 함께해요.</p></div>
+        <span class="loc">서울시 광진구</span>
+        <label class="sr" for="cSearch">글 검색</label>
+        <input class="field" id="cSearch" type="search" placeholder="검색어를 입력해주세요">
+        <ul class="list" id="posts"></ul>
+        <p class="empty" id="postsEmpty" hidden>찾는 글이 없어요. 아래에서 직접 글을 올려 보세요.</p>
+        <form class="write" id="postForm">
+          <h3 class="full">글쓰기</h3>
+          <label class="sr" for="pTitle">제목</label><input class="field full" id="pTitle" maxlength="40" placeholder="제목 (예: 주말 아침 같이 걸으실 분)">
+          <label class="sr" for="pKind">종류</label><select class="field" id="pKind"><option>모임</option><option>나눔</option><option>챌린지</option></select>
+          <label class="sr" for="pMax">모집 인원</label><input class="field" id="pMax" type="number" min="2" max="30" value="4" inputmode="numeric" aria-label="모집 인원">
+          <label class="sr" for="pWhen">언제</label><input class="field full" id="pWhen" maxlength="20" placeholder="언제 (예: 토요일 9시, 합의 가능)">
+          <p class="err full" id="pErr" hidden></p>
+          <button class="btn full" type="submit">글 올리기</button>
+          <p class="ex full" style="white-space:normal">올린 글은 지금 이 브라우저에만 저장돼요.</p>
+        </form>
+      </section>
+
+      <!-- 걷기 -->
+      <section class="pane" id="pane-walk" hidden>
+        <div class="ph"><div class="who">User327님,</div><h2>오늘도 <em>한 걸음</em><br>걸어볼까요?</h2></div>
+        <div class="walk-top">
+          <svg class="ring" viewBox="0 0 140 140" role="img" aria-labelledby="ringT"><title id="ringT">오늘 걸음 수</title>
+            <circle class="trk" cx="70" cy="70" r="58" fill="none" stroke-width="12"/>
+            <circle class="prg" id="ringP" cx="70" cy="70" r="58" fill="none" stroke-width="12" stroke-linecap="round" transform="rotate(-90 70 70)" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
+            <text x="70" y="70" text-anchor="middle" font-size="24" id="ringN">0보</text>
+            <text class="k" x="70" y="90" text-anchor="middle" font-size="11" id="ringK">0kcal</text>
+          </svg>
+          <div class="cmp">
+            <p id="walkMsg" style="font-weight:600"></p>
+            <div class="ln t"><span>오늘</span><span class="tr"><i id="barT"></i></span><b class="num" id="numT"></b></div>
+            <div class="ln"><span>평균</span><span class="tr"><i id="barA"></i></span><b class="num">2,438</b></div>
+            <p class="ex" style="white-space:normal">하루 목표 8,000보 · 걸음 수는 시연용이에요</p>
+          </div>
+        </div>
+        <div class="row"><button type="button" class="btn quiet" id="addSteps" style="flex:1 1 12rem">500걸음 걷기 (시연)</button><button type="button" class="btn" id="claim" style="flex:1 1 12rem">리워드 받으러 가기</button></div>
+        <div class="sub">
+          <div class="sub-h"><h3>출석 리워드를 드릴게요</h3><span class="badge" id="badge" hidden>공집사 뱃지</span></div>
+          <ul class="rules"><li>매일 출석 시 10P</li><li>7일 연속 출석 시 추가 보너스 50P</li><li>500P 이상 모으면 공집사 뱃지 지급</li></ul>
+          <div class="row" style="justify-content:space-between"><div class="streak" id="streak" aria-label="연속 출석"></div><span class="ex" id="streakTxt"></span></div>
+          <p>보유 리워드 <b class="num" id="ptsWalk">500</b>P</p>
+          <button type="button" class="btn" id="attend">오늘 출석하기</button>
+        </div>
+        <div class="zero">
+          <h3><em>0걸음</em> 긴급출동</h3>
+          <p style="font-size:.9rem">하루 넘게 걸음이 0으로 이어지면 안전 확인을 위해 자동으로 출동을 준비해요. 움직이거나 호출 취소를 누르면 바로 멈춰요.</p>
+          <button type="button" class="btn sm quiet" data-alert="z" style="align-self:flex-start">어떻게 보이는지 보기</button>
+        </div>
+      </section>
+
+      <section class="alert" id="alert" hidden aria-live="assertive">
+        <h2 id="alTitle"></h2>
+        <div class="count num" id="alCount"></div>
+        <p id="alDesc"></p>
+        <div class="card" id="alCard"></div>
+        <button type="button" class="cancel" id="alCancel"></button>
+        <p class="fine">시연 화면이에요. 실제 신고나 출동은 일어나지 않아요.</p>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('gongjipsa:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('gongjipsa:' + k, JSON.stringify(v)); } catch (e) {} }
+  };
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    for (const k in (attrs || {})) {
+      const v = attrs[k];
+      if (v == null || v === false) continue;
+      if (k === 'class') n.className = v; else if (k === 'text') n.textContent = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v === true ? '' : v);
+    }
+    for (const kid of kids.flat()) if (kid != null) n.append(kid);
+    return n;
+  };
+  const fmt = n => Number(n).toLocaleString('ko-KR');
+  const dayKey = (d = new Date()) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const today = dayKey();
+  const USER = 'User327';
+
+  /* ---------- 화면 전환 ---------- */
+  const TABS = { cctv: 'CCTV 연동', sos: '응급 상황 신고', medical: '의료 서비스 지도', mind: '마음 건강 챙기기', community: '커뮤니티', walk: '걷기 미션' };
+  const app = $('#app'), work = $('#work'), alertBox = $('#alert');
+  const wide = window.matchMedia('(min-width:900px)');
+  let pane = 'home', view = 'home';
+  function paintNav() {
+    $$('#nav button').forEach(b => {
+      const on = (wide.matches || view !== 'chat') && b.dataset.tab === pane;
+      b.classList.toggle('on', on);
+      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+  }
+  function showPane() { $$('.pane').forEach(p => { p.hidden = p.id !== 'pane-' + pane; }); }
+  function show(id, opts) {
+    const stay = opts && opts.stay;
+    if (id === 'chat') view = 'chat';
+    else if (id === 'home' || TABS[id]) {
+      pane = id;
+      if (!(stay && view === 'chat')) view = id === 'home' ? 'home' : 'work';
+      closeAlert(true); if (id === 'medical') closePlace(); showPane(); work.scrollTop = 0;
+      resetHome();
+    }
+    app.dataset.view = view;
+    app.dataset.pane = pane === 'home' ? 'home' : 'feature';
+    paintNav();
+  }
+  $('#nav').addEventListener('click', e => { const b = e.target.closest('button'); if (b) show(b.dataset.tab); });
+  wide.addEventListener('change', paintNav);
+
+  /* ---------- 글자 크기 ---------- */
+  const sizeBtn = $('#sizeBtn');
+  function setBig(on) { document.documentElement.classList.toggle('big', on); sizeBtn.setAttribute('aria-pressed', String(on)); }
+  setBig(!!store.get('big', false));
+  sizeBtn.addEventListener('click', () => { const on = sizeBtn.getAttribute('aria-pressed') !== 'true'; setBig(on); store.set('big', on); });
+
+  /* ---------- 걷기 · 포인트 ---------- */
+  const GOAL = 8000, AVG = 2438, C = 364.4;
+  let stepRec = store.get('steps', null); if (!stepRec || stepRec.d !== today) stepRec = { d: today, n: 5149, claimed: false };
+  let points = store.get('points', 500);
+  let att = store.get('att', { last: '', streak: 4 });
+  function paintPoints() { $('#ptsTop').textContent = fmt(points); $('#ptsWalk').textContent = fmt(points); $('#badge').hidden = points < 500; }
+  function addPoints(n) { points += n; store.set('points', points); paintPoints(); }
+  function paintWalk() {
+    const n = stepRec.n, p = Math.min(1, n / GOAL);
+    $('#ringP').setAttribute('stroke-dashoffset', (C * (1 - p)).toFixed(1));
+    $('#ringN').textContent = fmt(n) + '보';
+    $('#ringK').textContent = Math.round(n * 0.0622) + 'kcal · ' + (n * 0.00065).toFixed(1) + 'km';
+    $('#numT').textContent = fmt(n);
+    $('#barT').style.width = (p * 100) + '%';
+    $('#barA').style.width = (AVG / GOAL * 100) + '%';
+    $('#walkMsg').textContent = n >= GOAL ? '오늘 목표를 채웠어요.' : n > AVG ? '현재 걷기 거리가 평소 이 시간보다 늘었습니다.' : '평소보다 조금 덜 걸었어요. 가볍게 한 바퀴 어떠세요?';
+    const claim = $('#claim');
+    claim.disabled = n < GOAL || stepRec.claimed;
+    claim.textContent = stepRec.claimed ? '오늘 리워드 100P 받음' : n >= GOAL ? '리워드 100P 받기' : '목표까지 ' + fmt(GOAL - n) + '보';
+    const s = $('#streak'); s.textContent = '';
+    for (let i = 0; i < 7; i++) s.append(el('i', { class: i < (att.streak % 7 || (att.streak ? 7 : 0)) ? 'on' : '' }));
+    $('#streakTxt').textContent = att.streak + '일 연속 출석';
+    const a = $('#attend'); a.disabled = att.last === today; a.textContent = att.last === today ? '오늘 출석 완료 · 내일 또 만나요' : '오늘 출석하기 (+10P)';
+  }
+  $('#addSteps').addEventListener('click', () => { stepRec.n += 500; store.set('steps', stepRec); paintWalk(); });
+  $('#claim').addEventListener('click', () => { if (stepRec.n < GOAL || stepRec.claimed) return; stepRec.claimed = true; store.set('steps', stepRec); addPoints(100); paintWalk(); });
+  $('#attend').addEventListener('click', () => {
+    if (att.last === today) return;
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    att.streak = (att.last === '' || att.last === dayKey(y)) ? att.streak + 1 : 1;
+    att.last = today; store.set('att', att);
+    addPoints(att.streak % 7 === 0 ? 60 : 10); paintWalk();
+  });
+
+  /* ---------- 호출 화면 ---------- */
+  const ALERTS = {
+    r: { cls: 'r', title: '긴급 호출중', desc: '119와 공집사 안전망에 연결 중입니다.', cancel: '119 호출 취소', secs: 5 },
+    a: { cls: 'a', title: '긴급 신고중', desc: '112와 공집사 안전망에 연결 중입니다.', cancel: '112 신고 취소', secs: 5 },
+    z: { cls: 'z', title: '<em>0걸음</em> 긴급출동', desc: '장시간 움직임이 감지되지 않아 안전 확인이 필요해요. 움직임이 감지되면 출동이 자동 취소됩니다.', cancel: '호출 취소', secs: 292 }
+  };
+  let alTimer = null;
+  function closeAlert(silent) {
+    clearInterval(alTimer); alTimer = null;
+    if (alertBox.hidden) return;
+    alertBox.hidden = true;
+    showPane();
+    if (!silent) work.scrollTop = 0;
+  }
+  function openAlert(kind) {
+    const a = ALERTS[kind]; if (!a) return;
+    clearInterval(alTimer);
+    $$('.pane').forEach(p => { p.hidden = true; });
+    alertBox.className = 'alert ' + a.cls; alertBox.hidden = false;
+    $('#alTitle').innerHTML = a.title;
+    $('#alDesc').textContent = a.desc;
+    const now = new Date();
+    $('#alCard').textContent = '최근 위치: 서울시 광진구 (예시)\n호출 시간: ' + now.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });
+    $('#alCard').style.whiteSpace = 'pre-line';
+    $('#alCancel').textContent = a.cancel;
+    let left = a.secs;
+    const paint = () => { $('#alCount').textContent = kind === 'z' ? Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0') : left; };
+    paint();
+    alTimer = setInterval(() => {
+      left--; paint();
+      if (left <= 0) {
+        clearInterval(alTimer); alTimer = null;
+        $('#alCount').textContent = '연결';
+        $('#alDesc').textContent = '시연은 여기까지예요. 실제 서비스에서는 이 시점에 상황실로 위치와 함께 연결됩니다.';
+        $('#alCancel').textContent = '닫기';
+      }
+    }, 1000);
+    work.scrollTop = 0; $('#alCancel').focus({ preventScroll: true });
+  }
+  $('#alCancel').addEventListener('click', () => closeAlert());
+  work.addEventListener('click', e => {
+    const b = e.target.closest('[data-alert]'); if (!b) return;
+    if (b.dataset.alert === 'g') { const n = $('#notice'); n.scrollIntoView({ block: 'start' }); n.focus({ preventScroll: true }); }
+    else openAlert(b.dataset.alert);
+  });
+
+  /* ---------- CCTV ---------- */
+  const camClock = $('#camClock');
+  const tick = () => { camClock.textContent = new Date().toLocaleTimeString('ko-KR', { hour12: false }); };
+  tick(); setInterval(tick, 1000);
+  $('#camChips').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $$('#camChips button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    $('#camName').textContent = b.dataset.cam;
+    const i = $$('#camChips button').indexOf(b);
+    $('#camView svg').style.transform = ['none', 'scaleX(-1)', 'scale(1.25)'][i];
+  });
+  $('#camReport').addEventListener('click', () => { show('sos'); openAlert('a'); });
+
+  /* ---------- 의료 ---------- */
+  const PLACES = [
+    { id: 'p1', name: '햇살정형외과의원', dept: '정형외과', dong: '능동', hours: '10:00~17:00', rate: 4.9, tags: ['친절해요', '빨라요'], x: 92, y: 56 },
+    { id: 'p2', name: '능동튼튼정형외과', dept: '정형외과', dong: '능동', hours: '11:00~19:00', rate: 4.8, tags: ['정확해요', '포근해요'], x: 214, y: 70 },
+    { id: 'p3', name: '나무내과의원', dept: '내과', dong: '능동', hours: '09:00~18:00', rate: 4.7, tags: ['정확해요', '빨라요'], x: 150, y: 122 },
+    { id: 'p4', name: '다온가정의학과의원', dept: '가정의학과', dong: '구의동', hours: '09:30~18:30', rate: 4.8, tags: ['친절해요'], x: 272, y: 130 },
+    { id: 'p5', name: '고운이비인후과의원', dept: '이비인후과', dong: '화양동', hours: '10:00~19:00', rate: 4.6, tags: ['빨라요'], x: 78, y: 160 },
+    { id: 'p6', name: '구의바른정형외과', dept: '정형외과', dong: '구의동', hours: '10:00~17:00', rate: 4.9, tags: ['정확해요', '빨라요'], x: 240, y: 168 },
+    { id: 'p7', name: '새봄약국', dept: '약국', dong: '능동', hours: '09:00~21:00', rate: 4.7, tags: ['늦게까지 해요'], x: 124, y: 88 },
+    { id: 'p8', name: '화양마음정신건강의학과', dept: '정신건강의학과', dong: '화양동', hours: '10:00~18:00', rate: 4.8, tags: ['포근해요', '친절해요'], x: 36, y: 66 }
+  ];
+  let bookings = store.get('bookings', {});
+  let selPlace = null;
+  function paintMedical() {
+    const dong = $('#fDong').value, dept = $('#fDept').value;
+    const rows = PLACES.filter(p => (!dong || p.dong === dong) && (!dept || p.dept === dept));
+    $('#medCount').textContent = rows.length + '곳';
+    $('#medEmpty').hidden = rows.length > 0;
+    $('#pins').innerHTML = rows.map(p => '<g class="pin' + (p.id === selPlace ? ' sel' : '') + '" data-id="' + p.id + '" transform="translate(' + p.x + ',' + p.y + ')' + (p.id === selPlace ? ' scale(1.25)' : '') + '" tabindex="0" role="button" aria-label="' + p.name + '"><path d="M0 0c-5-7.5-9.5-12-9.5-17.5a9.5 9.5 0 0 1 19 0C9.5-12 5-7.5 0 0z"/><circle cx="0" cy="-17.5" r="6.3"/><path class="x" d="M-1.6-22h3.2v2.9h2.9v3.2H1.6v2.9h-3.2v-2.9h-2.9v-3.2h2.9z"/></g>').join('');
+    const ul = $('#places'); ul.textContent = '';
+    rows.forEach(p => {
+      const bk = bookings[p.id];
+      ul.append(el('li', { class: 'place' + (p.id === selPlace ? ' sel' : ''), 'data-id': p.id },
+        el('div', { style: 'min-width:0' },
+          el('div', { class: 'nm', text: p.name }),
+          el('div', { class: 'meta', text: p.dong + ' · ' + p.dept + ' · ' + p.hours }),
+          el('div', { class: 'meta', text: p.tags.map(t => '#' + t).join(' ') }),
+          bk ? el('div', { class: 'bk num', text: '예약 요청됨 · ' + bk.label + ' ' + bk.t }) : null),
+        el('div', { class: 'side' },
+          el('span', { class: 'star num', text: '★ ' + p.rate.toFixed(1) }),
+          el('button', { type: 'button', class: 'btn sm' + (bk || p.dept === '약국' ? ' quiet' : ''), text: bk ? '예약 확인' : p.dept === '약국' ? '정보 보기' : '정보·예약', onclick: () => openPlace(p.id) }))));
+    });
+  }
+
+  /* 병원 정보와 예약 */
+  const WD = ['일', '월', '화', '수', '목', '금', '토'];
+  let curPlace = null, pickDate = null, pickTime = null, dateOpts = [];
+  const dateLabel = d => (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + WD[d.getDay()] + ')';
+  function slotsFor(pl, d) {
+    const [a, b] = pl.hours.split('~').map(v => { const [h, m] = v.split(':').map(Number); return h * 60 + m; });
+    const sat = d.getDay() === 6, end = sat ? Math.min(13 * 60, b) : b, now = new Date(), out = [];
+    const isToday = dayKey(d) === dayKey(now), nowMin = now.getHours() * 60 + now.getMinutes();
+    for (let t = a; t + 30 <= end; t += 30) {
+      if (!sat && t >= 12 * 60 + 30 && t < 14 * 60) continue;
+      const taken = (pl.id.charCodeAt(1) * 7 + t / 30 + d.getDate() * 3) % 5 === 0;
+      out.push({ t: String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'), off: taken || (isToday && t <= nowMin + 20) });
+    }
+    return out;
+  }
+  function paintSlots() {
+    const box = $('#hsSlots'); box.textContent = '';
+    const list = slotsFor(curPlace, pickDate);
+    if (!list.some(x => x.t === pickTime && !x.off)) pickTime = null;
+    list.forEach(x => box.append(el('button', { type: 'button', text: x.t, disabled: x.off, 'aria-pressed': String(x.t === pickTime), 'aria-label': x.t + (x.off ? ' 마감' : ''), onclick: () => { pickTime = x.t; $('#hsErr').hidden = true; paintSlots(); } })));
+    if (!list.length) box.append(el('p', { class: 'empty', text: '이 날은 예약할 수 있는 시간이 없어요.' }));
+  }
+  function paintDates() {
+    const box = $('#hsDates'); box.textContent = '';
+    dateOpts.forEach(d => box.append(el('button', { type: 'button', text: dayKey(d) === today ? '오늘' : (d.getMonth() + 1) + '/' + d.getDate() + ' ' + WD[d.getDay()], 'aria-pressed': String(dayKey(d) === dayKey(pickDate)), onclick: () => { pickDate = d; paintDates(); paintSlots(); } })));
+  }
+  function paintPlace() {
+    const pl = curPlace, bk = bookings[pl.id], pharm = pl.dept === '약국';
+    $('#hsTitle').innerHTML = pharm ? '<em>약국</em> 정보를<br>알려드릴게요' : '<em>예약</em>을<br>도와드릴게요';
+    const chips = $('#hsChips'); chips.textContent = '';
+    ['광진구', pl.dong, pl.dept].forEach(t => chips.append(el('span', { text: t })));
+    $('#hsName').textContent = pl.name;
+    $('#hsRate').textContent = '★ ' + pl.rate.toFixed(1);
+    $('#hsTags').textContent = pl.tags.map(t => '#' + t).join(' ');
+    const mins = Math.round(Math.hypot(pl.x - 160, pl.y - 100) / 12) + 2;
+    const info = $('#hsInfo'); info.textContent = '';
+    [['위치', '서울시 광진구 ' + pl.dong + ' · 걸어서 약 ' + mins + '분'], ['평일', pl.hours + (pharm ? '' : ' (점심 12:30~14:00)')], ['토요일', pl.hours.split('~')[0] + '~13:00'], ['일·공휴일', '쉬어요']]
+      .forEach(([k, v]) => info.append(el('dt', { text: k }), el('dd', { class: 'num', text: v })));
+    $('#hsForm').hidden = pharm || !!bk; $('#hsDone').hidden = !bk; $('#hsWalkin').hidden = !pharm;
+    if (bk) { $('#hsDoneWhen').textContent = bk.label + ' ' + bk.t + ' · ' + pl.name; $('#hsDoneMemo').textContent = bk.memo ? '증상 메모: ' + bk.memo : ''; $('#hsDoneMemo').hidden = !bk.memo; }
+    else if (!pharm) { paintDates(); paintSlots(); }
+  }
+  function openPlace(id) {
+    curPlace = PLACES.find(x => x.id === id); if (!curPlace) return;
+    dateOpts = [];
+    for (let i = 0; dateOpts.length < 5 && i < 12; i++) { const d = new Date(); d.setDate(d.getDate() + i); if (d.getDay() !== 0) dateOpts.push(d); }
+    pickDate = dateOpts.find(d => slotsFor(curPlace, d).some(x => !x.off)) || dateOpts[0]; pickTime = null;
+    $('#hsMemo').value = ''; $('#hsErr').hidden = true;
+    $('#medList').hidden = true; $('#medDetail').hidden = false; work.scrollTop = 0;
+    paintPlace(); $('#hsBack').focus({ preventScroll: true });
+  }
+  function closePlace() { $('#medDetail').hidden = true; $('#medList').hidden = false; curPlace = null; }
+  $('#hsBack').addEventListener('click', () => { closePlace(); paintMedical(); work.scrollTop = 0; });
+  $('#hsToList').addEventListener('click', () => { closePlace(); paintMedical(); work.scrollTop = 0; });
+  $('#hsSubmit').addEventListener('click', () => {
+    if (!pickTime) { const e = $('#hsErr'); e.textContent = '예약할 시간을 골라 주세요.'; e.hidden = false; return; }
+    bookings[curPlace.id] = { d: dayKey(pickDate), label: dateLabel(pickDate), t: pickTime, memo: $('#hsMemo').value.trim() };
+    store.set('bookings', bookings); paintPlace(); work.scrollTop = 0;
+  });
+  $('#hsCancel').addEventListener('click', () => { delete bookings[curPlace.id]; store.set('bookings', bookings); pickTime = null; paintPlace(); });
+  function pickPlace(id) { selPlace = selPlace === id ? null : id; paintMedical(); if (selPlace) { const li = $('#places [data-id="' + id + '"]'); if (li) li.scrollIntoView({ block: 'nearest' }); } }
+  $('#pins').addEventListener('click', e => { const g = e.target.closest('.pin'); if (g) pickPlace(g.dataset.id); });
+  $('#pins').addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const g = e.target.closest('.pin'); if (g) { e.preventDefault(); pickPlace(g.dataset.id); } });
+  $('#fDong').addEventListener('change', paintMedical);
+  $('#fDept').addEventListener('change', paintMedical);
+  function setDept(d) { const s = $('#fDept'); if ([...s.options].some(o => o.value === d || o.text === d)) { s.value = d; $('#fDong').value = ''; paintMedical(); } }
+
+  /* ---------- 마음 ---------- */
+  const FACE = { '좋음': 'M8 14.5c2 2.6 6 2.6 8 0', '보통': 'M8.5 15.2h7', '나쁨': 'M8 16.2c2-2.6 6-2.6 8 0' };
+  const FACE_FILL = { '좋음': '#A6E3A1', '보통': '#EFD76B', '나쁨': '#E3A0A3' };
+  const MOOD_SAY = {
+    '좋음': '기분 좋은 날이네요. 이 기운으로 가볍게 걷고 오시면 더 좋겠어요.',
+    '보통': '무난한 하루군요. 혹시 몸이 불편하거나 피곤하지는 않으세요?',
+    '나쁨': '오늘은 마음이 무거우셨군요. 무리하지 말고 쉬어 가요. 이야기하고 싶으면 제가 듣고 있을게요.'
+  };
+  const STRESS = [92, 70, 42, 60, 18, 48, 66], MOOD_LV = { '좋음': 20, '보통': 50, '나쁨': 88 };
+  let moods = store.get('moods', {});
+  const todayIdx = (new Date().getDay() + 6) % 7;
+  $$('#moods button').forEach(b => {
+    const m = b.dataset.mood;
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="' + FACE_FILL[m] + '" stroke="#16213A" stroke-width="1.3"/><circle cx="9" cy="10" r="1.2" fill="#16213A"/><circle cx="15" cy="10" r="1.2" fill="#16213A"/><path d="' + FACE[m] + '" fill="none" stroke="#16213A" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    b.append(m);
+  });
+  function paintMind() {
+    const m = moods[today];
+    $$('#moods button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mood === m)));
+    if (m) $('#moodSay').textContent = MOOD_SAY[m];
+    $('#moodTalk').hidden = !m;
+    const vals = STRESS.slice(); if (m) vals[todayIdx] = MOOD_LV[m];
+    const bars = $('#bars'); bars.textContent = '';
+    vals.forEach((v, i) => bars.append(el('div', { class: i === todayIdx ? 'today' : '', style: 'height:' + v + '%', title: v + '점' })));
+    const avg = Math.round(vals.reduce((a, b) => a + b, 0) / 7);
+    $('#verdict').innerHTML = '주간 종합: <b>' + (avg >= 55 ? '경고' : avg >= 35 ? '주의' : '양호') + '</b> · 평균 ' + avg + '점';
+  }
+  $('#moods').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; moods[today] = b.dataset.mood; store.set('moods', moods); paintMind(); });
+  $('#moodTalk').addEventListener('click', () => {
+    const m = moods[today]; show('chat');
+    $('#msg').value = m === '좋음' ? '오늘 기분이 좋아요. 이 기분 이어가려면 뭘 하면 좋을까요?' : m === '나쁨' ? '오늘 기분이 좀 안 좋아요.' : '오늘 기분은 그냥 보통이에요.';
+    $('#msg').focus();
+  });
+
+  const MED_TOTAL = 180; let medLeft = MED_TOTAL, medTimer = null;
+  function paintMed() {
+    $('#medTime').textContent = Math.floor(medLeft / 60) + ':' + String(medLeft % 60).padStart(2, '0');
+    $('#dial').style.setProperty('--p', ((MED_TOTAL - medLeft) / MED_TOTAL * 100).toFixed(1));
+    $('#medToggle').textContent = medTimer ? '일시 정지' : medLeft === 0 ? '다시 하기' : medLeft < MED_TOTAL ? '이어서' : '시작';
+  }
+  function stopMed() { clearInterval(medTimer); medTimer = null; }
+  $('#medToggle').addEventListener('click', () => {
+    if (medTimer) stopMed();
+    else { if (medLeft === 0) medLeft = MED_TOTAL; medTimer = setInterval(() => { medLeft--; if (medLeft <= 0) { medLeft = 0; stopMed(); } paintMed(); }, 1000); }
+    paintMed();
+  });
+  $('#medReset').addEventListener('click', () => { stopMed(); medLeft = MED_TOTAL; paintMed(); });
+
+  let diary = store.get('diary', []);
+  function paintDiary() {
+    const ul = $('#diary'); ul.textContent = '';
+    diary.slice(0, 5).forEach(d => ul.append(el('li', null, el('time', { text: d.d }), d.t)));
+    $('#diaryEmpty').hidden = diary.length > 0;
+    const month = today.slice(0, 7), days = new Set(diary.filter(d => d.d.startsWith(month)).map(d => d.d));
+    $('#hearts').textContent = '♥'.repeat(days.size).split('').join(' ');
+  }
+  $('#diaryForm').addEventListener('submit', e => {
+    e.preventDefault(); const t = $('#diaryIn').value.trim(); if (!t) return;
+    diary.unshift({ d: today, t }); diary = diary.slice(0, 60); store.set('diary', diary); $('#diaryIn').value = ''; paintDiary();
+  });
+
+  /* ---------- 커뮤니티 ---------- */
+  const SEED = [
+    { id: 'c1', kind: '모임', title: '같이 한강 러닝하실 파티원 구해요!', when: '8/25 6시', n: 4, max: 5, ex: true },
+    { id: 'c2', kind: '나눔', title: '커피믹스 나눔 합니다.', when: '합의 가능', n: 5, max: 10, ex: true },
+    { id: 'c3', kind: '챌린지', title: '매일 계단오르기 챌린지 하실 분~!!!', when: '매일 저녁 7시', n: 1, max: 3, ex: true }
+  ];
+  let posts = store.get('posts', null) || SEED.map(p => ({ ...p }));
+  const joined = new Set(store.get('joined', []));
+  const KIND = { '모임': '', '나눔': ' k2', '챌린지': ' k3' };
+  function paintPosts() {
+    const q = $('#cSearch').value.trim(), ul = $('#posts'); ul.textContent = '';
+    const rows = posts.filter(p => !q || p.title.includes(q) || p.kind.includes(q));
+    $('#postsEmpty').hidden = rows.length > 0;
+    rows.forEach(p => {
+      const mine = joined.has(p.id), full = p.n >= p.max && !mine;
+      ul.append(el('li', { class: 'post' },
+        el('div', { style: 'min-width:0' },
+          el('span', { class: 'kind' + KIND[p.kind], text: p.kind + (p.ex ? ' · 예시 글' : p.own ? ' · 내가 쓴 글' : '') }),
+          el('div', { class: 't', text: p.title }),
+          el('div', { class: 'm num', text: p.when + ' · ' + p.n + '/' + p.max + '명' })),
+        el('button', { type: 'button', class: 'btn sm' + (mine ? ' quiet' : ''), disabled: full || p.own, style: 'flex:none', text: p.own ? '모집 중' : mine ? '참여 취소' : full ? '마감' : '참여하기',
+          onclick: () => { if (mine) { joined.delete(p.id); p.n--; } else { joined.add(p.id); p.n++; } store.set('joined', [...joined]); store.set('posts', posts); paintPosts(); } })));
+    });
+  }
+  $('#cSearch').addEventListener('input', paintPosts);
+  $('#postForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const title = $('#pTitle').value.trim(), when = $('#pWhen').value.trim() || '합의 가능', max = parseInt($('#pMax').value, 10), err = $('#pErr');
+    if (title.length < 2) { err.textContent = '제목을 두 글자 이상 적어 주세요.'; err.hidden = false; $('#pTitle').focus(); return; }
+    if (!(max >= 2 && max <= 30)) { err.textContent = '모집 인원은 2명에서 30명 사이로 정해 주세요.'; err.hidden = false; $('#pMax').focus(); return; }
+    err.hidden = true;
+    posts.unshift({ id: 'u' + Date.now(), kind: $('#pKind').value, title, when, n: 1, max, own: true });
+    store.set('posts', posts); $('#pTitle').value = ''; $('#pWhen').value = ''; $('#cSearch').value = ''; paintPosts(); work.scrollTop = 0;
+  });
+
+  /* ---------- 집 첫 화면 ---------- */
+  const scene = $('#scene'), rooms = $$('.room', scene);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const HOLD = { cctv: 1350, sos: 900, medical: 1050, community: 1050, walk: 950, mind: 420 };
+  let going = false, goT = 0;
+  const houseG = $('#houseG');
+  function fitScene() {
+    const w = scene.clientWidth, h = scene.clientHeight;
+    if (!w || !h) return;
+    let W = 756, H = 1290;
+    if (h / w >= H / W) H = W * h / w; else W = H * w / h;
+    scene.setAttribute('viewBox', '0 0 ' + W.toFixed(1) + ' ' + H.toFixed(1));
+    houseG.setAttribute('transform', 'translate(' + (W - 756).toFixed(1) + ',' + (H - 1290).toFixed(1) + ')');
+  }
+  if (window.ResizeObserver) new ResizeObserver(fitScene).observe(scene);
+  window.addEventListener('resize', fitScene);
+  function paintHome() {
+    fitScene();
+    const rec = !!moods[today], mind = $('#room-mind');
+    mind.classList.toggle('lit', rec); mind.classList.toggle('dark', !rec);
+    mind.setAttribute('aria-label', '마음 건강 챙기기 열기. ' + (rec ? '오늘 기록해서 불이 켜져 있어요.' : '오늘은 아직 기록 전이라 불이 꺼져 있어요.'));
+  }
+  function resetHome() {
+    clearTimeout(goT); going = false;
+    scene.classList.remove('detect', 'leaving');
+    rooms.forEach(r => r.classList.remove('act'));
+    $('#room-community').classList.remove('lit');
+    paintHome();
+  }
+  function enter(room) {
+    if (going) return;
+    const go = room.dataset.go;
+    if (reduceMotion.matches) { show(go); return; }
+    going = true;
+    room.classList.add('act');
+    if (go === 'community') room.classList.add('lit');
+    if (go === 'cctv') scene.classList.add('detect');
+    goT = setTimeout(() => {
+      const hb = room.querySelector('.hit').getBoundingClientRect(), sb = scene.getBoundingClientRect();
+      if (sb.width && sb.height) {
+        scene.style.setProperty('--ox', ((hb.left + hb.width / 2 - sb.left) / sb.width * 100).toFixed(1) + '%');
+        scene.style.setProperty('--oy', ((hb.top + hb.height / 2 - sb.top) / sb.height * 100).toFixed(1) + '%');
+      }
+      scene.classList.add('leaving');
+      goT = setTimeout(() => show(go), 330);
+    }, HOLD[go] || 600);
+  }
+  scene.addEventListener('click', e => { const r = e.target.closest('.room'); if (r) enter(r); });
+  scene.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const r = e.target.closest('.room'); if (r) { e.preventDefault(); enter(r); }
+  });
+  $('#askBar').addEventListener('click', () => show('chat'));
+  $('#logoButler').addEventListener('click', () => show('chat'));
+  $('#logoButler').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show('chat'); } });
+  $('#homeBtn').addEventListener('click', () => show('home'));
+  $('#chatBtn').addEventListener('click', () => show('chat'));
+
+  /* ---------- AI 공집사 ---------- */
+  const log = $('#log'), input = $('#msg'), sendBtn = $('#send'), statusEl = $('#aiStatus');
+  const turns = [];
+  let busy = false, ctl = null, aiOff = false;
+  const hasRuntime = !!(window.claude && typeof window.claude.use === 'function');
+  const samplePromise = hasRuntime ? window.claude.use('sample').catch(() => null) : Promise.resolve(null);
+  function setMode(ai) {
+    statusEl.classList.toggle('basic', !ai);
+    statusEl.textContent = ai ? 'AI 공집사가 듣고 있어요.' : '기본 응답 모드예요. 정해진 답변만 드려요.';
+  }
+  if (!hasRuntime) setMode(false);
+  samplePromise.then(fn => setMode(!!fn));
+
+  const OPEN_RE = /\[\[open:(cctv|sos|medical|mind|community|walk)(?::([^\]\n]{1,14}))?\]\]/;
+  const strip = t => String(t || '').replace(/\[\[[^\]]*\]\]/g, '').replace(/\s*\[{1,2}[^\]]*\]?$/, '').trim();
+  function parse(t) { const m = OPEN_RE.exec(t || ''); return { text: strip(t), open: m ? m[1] : null, dept: m ? m[2] : null }; }
+  const scrollLog = () => { log.scrollTop = log.scrollHeight; };
+
+  function addMsg(role, text) {
+    const bubble = el('div', { class: 'bubble', text });
+    const body = el('div', { class: 'body' }, bubble);
+    const wrap = role === 'user' ? el('div', { class: 'msg user' }, bubble)
+      : el('div', { class: 'msg' }, (() => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'av'); s.setAttribute('aria-hidden', 'true'); s.innerHTML = '<use href="#i-butler"/>'; return s; })(), body);
+    log.append(wrap); scrollLog();
+    return { wrap, bubble, body };
+  }
+  function finish(m, text, open, dept) {
+    m.bubble.classList.remove('pending'); m.bubble.textContent = text;
+    if (open && TABS[open]) {
+      const go = () => { if (open === 'medical' && dept) setDept(dept.trim()); show(open); };
+      m.body.append(el('button', { type: 'button', class: 'go-chip', text: TABS[open] + ' 열기', onclick: go }));
+      if (wide.matches) { if (open === 'medical' && dept) setDept(dept.trim()); show(open, { stay: true }); }
+    }
+    scrollLog();
+  }
+  function note(text) { const m = addMsg('butler', text); m.bubble.classList.add('note'); }
+
+  function rules() {
+    const mood = moods[today] || '아직 기록 없음';
+    return [
+      "당신은 '공집사'입니다. 혼자 사는 사람(1인 가구) 곁에서 안전, 건강, 생활을 챙기는 '공동의 집사' 역할을 하는 챗봇입니다. 공집사는 1인 가구를 위한 서울형 라이프케어 플랫폼 기획안이며, 지금은 기획 프로토타입 웹입니다.",
+      "말투: 정중하고 따뜻한 존댓말(해요체). 집사처럼 차분하고 든든하게. 보통 2~4문장으로 짧게 답합니다. 마크다운, 목록 기호, 이모지는 쓰지 않습니다. 사용자는 '" + USER + "님'이라고 부릅니다. 한국어로 답하되 사용자가 다른 언어로 말하면 그 언어로 답합니다.",
+      "앱 화면 6가지 (괄호 안은 화면ID):\n- CCTV 연동(cctv): 현관 밖을 실시간으로 확인하고 외부인이 다가오면 버튼으로 신고\n- 응급 상황 신고(sos): 신호등 색 버튼. 빨강 긴급 119 호출, 노랑 주의 112 신고, 초록 생활·복지 공공 알림\n- 의료 서비스 지도(medical): 지역과 진료과로 병원·약국을 찾고 비교. 병원을 누르면 진료 시간 같은 정보를 보고 날짜와 시간을 골라 예약을 요청하는 화면이 열림\n- 마음 건강 챙기기(mind): 오늘 기분 기록, 주간 스트레스, 3분 명상, 한 줄 마음일기\n- 커뮤니티(community): 동네 모임, 나눔, 챌린지 글 보기와 글쓰기\n- 걷기 미션(walk): 하루 8,000보 목표, 출석 10P, 7일 연속 보너스 50P, 500P 이상 뱃지. 하루 넘게 0걸음이면 안전 확인을 위한 긴급출동",
+      "앱에 등록된 예시 병원(실제 병원 아님): " + PLACES.map(p => p.name + '(' + p.dong + ', ' + p.dept + ', ' + p.hours + ')').join('; '),
+      "지금 사용자 상태: 오늘 " + fmt(stepRec.n) + "보(평균 2,438보), 리워드 " + fmt(points) + "P, 오늘 기분 기록: " + mood + ", 연속 출석 " + att.streak + "일. 현재 시각: " + new Date().toLocaleString('ko-KR') + ".",
+      "정직하게: 이 프로토타입은 실제 119, 112, CCTV, 병원 예약 시스템과 연결되어 있지 않습니다. 신고했다, 예약했다, 출동시켰다고 말하지 않습니다. 대신 어느 화면에서 할 수 있는지 안내합니다.",
+      "안전: 생명이 위험하거나 범죄가 의심되는 상황이면 가장 먼저 119 또는 112로 직접 전화하라고 분명히 말합니다. 죽고 싶다거나 자해를 떠올리는 말에는 다그치지 않고 공감하며, 혼자가 아니라는 점과 자살예방 상담전화 109(24시간), 급하면 119를 알려 줍니다. 병을 진단하거나 약을 정해 주지 않고, 증상이 걱정되면 진료를 권합니다.",
+      "화면 연결: 답변과 관련된 화면이 있으면 답변 맨 마지막 줄에 [[open:화면ID]] 를 한 번만 붙입니다. 의료 화면에서 진료과가 정해지면 [[open:medical:정형외과]] 처럼 진료과 이름을 덧붙입니다(가능한 값: 정형외과, 내과, 가정의학과, 이비인후과, 정신건강의학과, 약국). 관련 화면이 없으면 붙이지 않습니다. 이 표시에 대해 설명하지 않습니다.",
+      "아래부터 사용자와의 대화입니다."
+    ].join('\n\n');
+  }
+
+  function scripted(q) {
+    const t = q.toLowerCase();
+    const R = (text, open, dept) => ({ text, open, dept });
+    if (/죽고|자살|자해|사라지고 싶|살기 싫/.test(t)) return R('많이 힘드셨겠어요. 그런 마음을 꺼내 주셔서 고마워요. 지금 혼자 견디지 않으셔도 돼요. 자살예방 상담전화 109는 24시간 열려 있고, 당장 위험하다면 119로 전화해 주세요.', 'mind');
+    if (/쓰러|숨이|피가|불이|화재|응급|119|의식/.test(t)) return R('위급한 상황이라면 지금 바로 119로 직접 전화해 주세요. 이 프로토타입은 실제 신고가 접수되지 않아요. 신고 화면에서는 버튼이 어떻게 동작하는지 볼 수 있어요.', 'sos');
+    if (/침입|수상|도둑|따라오|112|누가 있|무서/.test(t)) return R('불안하시겠어요. 위협이 느껴지면 바로 112로 직접 전화해 주세요. CCTV 화면에서 현관 밖을 확인하고 신고 버튼을 누르는 흐름을 볼 수 있어요.', 'cctv');
+    if (/정형외과|허리|무릎|어깨|삐/.test(t)) return R('몸이 불편하시군요. 의료 서비스 지도에서 가까운 정형외과를 모아 봤어요. 진료 시간과 평점을 비교해 보세요.', 'medical', '정형외과');
+    if (/병원|아파|아프|약국|진료|감기|내과|열이/.test(t)) return R('가까운 병원과 약국을 지도에서 찾아볼 수 있어요. 동과 진료과를 고르면 목록이 바로 바뀌어요.', 'medical');
+    if (/우울|외로|기분|스트레스|불안|잠이|힘들|심심/.test(t)) return R('혼자 있는 시간이 길면 그럴 수 있어요. 오늘 기분을 남기고 3분 명상을 해 보시면 어떨까요? 사람이 그리우시면 동네 모임도 열려 있어요.', 'mind');
+    if (/모임|친구|나눔|같이|커뮤니티|사람/.test(t)) return R('동네 모임과 나눔 글이 올라와 있어요. 마음에 드는 글에 참여하거나 직접 글을 올려 보세요.', 'community');
+    if (/걷|걸음|운동|리워드|포인트|출석/.test(t)) return R('오늘은 ' + fmt(stepRec.n) + '보 걸으셨어요. 하루 8,000보를 채우면 리워드를 받을 수 있고, 출석만 해도 10P가 쌓여요.', 'walk');
+    if (/cctv|현관|집 밖|문 앞/.test(t)) return R('CCTV 화면에서 현관 밖을 바로 확인할 수 있어요.', 'cctv');
+    if (/어떻게 도와|뭘 해|무엇을 해/.test(t)) return R('위험하면 바로 알려주고, 건강도 챙겨줘요. 혼자여도 사람들과 이어져요.');
+    if (/왜 필요/.test(t)) return R('혼자 사는 시간이 길어도 안전하고 건강하게 지낼 수 있도록 곁에서 지켜주는 친구니까요.');
+    if (/어떤 서비스|뭐야|소개|누구|공집사/.test(t)) return R('1인가구가 안전하고 편하게 생활할 수 있도록 안전, 건강, 생활을 종합 지원하는 서울형 라이프케어 프로그램이에요.');
+    return R('지금은 기본 응답 모드라 정해진 답변만 드릴 수 있어요. 병원 찾기, 기분 기록, 동네 모임, 걷기 리워드, 응급 신고 중에 궁금한 것을 말씀해 주세요.');
+  }
+
+  const COPY = {
+    rate_limited: '지금은 요청이 많아요. 잠시 뒤에 다시 말씀해 주세요.',
+    session_expired: '로그인이 만료됐어요. 다시 로그인한 뒤 말씀해 주세요.',
+    prompt_too_large: '대화가 너무 길어졌어요. 조금 짧게 다시 말씀해 주세요.',
+    empty_completion: '답을 만들지 못했어요. 조금 다르게 말씀해 주시겠어요?'
+  };
+  const HIDE = new Set(['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed']);
+  function setBusy(on) { busy = on; sendBtn.textContent = on ? '정지' : '보내기'; sendBtn.type = on ? 'button' : 'submit'; }
+
+  async function send(raw) {
+    const text = String(raw || '').trim();
+    if (!text || busy) return;
+    setBusy(true);
+    addMsg('user', text); turns.push({ role: 'user', content: text });
+    const m = addMsg('butler', '생각하는 중…'); m.bubble.classList.add('pending');
+    const fallback = async () => {
+      await new Promise(r => setTimeout(r, 300));
+      const r = scripted(text); finish(m, r.text, r.open, r.dept);
+      turns.push({ role: 'assistant', content: r.text });
+    };
+    try {
+      const fn = aiOff ? null : await samplePromise;
+      if (!fn) { await fallback(); return; }
+      ctl = new AbortController();
+      const res = await fn([{ role: 'user', content: rules() }, ...turns.slice(-14)], {
+        cache: false, modelTier: 'quick', signal: ctl.signal,
+        onText: ({ text: t }) => { const s = strip(t); if (s) { m.bubble.classList.remove('pending'); m.bubble.textContent = s; scrollLog(); } }
+      });
+      turns.push({ role: 'assistant', content: res.text });
+      const a = parse(res.text);
+      finish(m, a.text || '말씀을 잘 이해하지 못했어요. 다시 한 번 말씀해 주시겠어요?', a.open, a.dept);
+      if (res.truncated) note('답변이 길어서 중간에 끊겼어요.');
+    } catch (e) {
+      const code = e && e.code, kept = strip(e && e.text);
+      if (code === 'cancelled') { if (kept) { finish(m, kept); turns.push({ role: 'assistant', content: kept }); } else m.wrap.remove(); }
+      else if (HIDE.has(code)) { aiOff = true; setMode(false); await fallback(); note('AI 사용이 허용되지 않아 기본 응답으로 전환했어요.'); }
+      else if (code === 'refused') finish(m, '이 내용은 제가 답하기 어려워요. 다르게 말씀해 주시겠어요?');
+      else { finish(m, kept || (COPY[code] || '연결이 잠시 끊겼어요. 다시 한 번 보내 주세요.')); if (kept) note(COPY[code] || '답변이 중간에 끊겼어요. 다시 보내면 이어서 답해 드려요.'); }
+    } finally { ctl = null; setBusy(false); }
+  }
+  $('#composer').addEventListener('submit', e => { e.preventDefault(); if (busy) return; const v = input.value; input.value = ''; send(v); });
+  sendBtn.addEventListener('click', () => { if (busy && ctl) ctl.abort(); });
+  $('#suggest').addEventListener('click', e => { const b = e.target.closest('button'); if (b) send(b.textContent); });
+
+  /* ---------- 시작 ---------- */
+  addMsg('butler', USER + '님, 안녕하세요. 공집사예요.\n안전, 건강, 생활 무엇이든 편하게 말씀해 주세요. 필요한 화면은 제가 바로 열어 드릴게요.');
+  paintPoints(); paintWalk(); paintMedical(); paintMind(); paintMed(); paintDiary(); paintPosts();
+  const h = (location.hash || '').slice(1);
+  show(TABS[h] ? h : 'home');
+})();
+</script>
+
+</body>
+</html>
